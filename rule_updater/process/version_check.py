@@ -36,5 +36,3 @@ class RuleUpdateVersionCheckProcess(SchedulerThreadInterface):
             self.scheduler.run_pending()
             time.sleep(1)
 
-
-

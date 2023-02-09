@@ -1,6 +1,8 @@
 import base64
 from Cryptodome.Cipher import ChaCha20
 
+from rule_updater.env import get_env_str
+
 # https://pycryptodome.readthedocs.io/en/latest/src/cipher/chacha20.html
 # ChaCha20-Poly1305 Chacha20 암호와와 인증기능까지 추가한 기능
 # 추후 XChaCha20 으로 발전시킬것 2022년 12월 26일 xchacha는 draft stage임으로 아직 적용 안함
@@ -9,8 +11,8 @@ from Cryptodome.Cipher import ChaCha20
 # cipher = ChaCha20.new(key=key)
 # nonce = base64.b64encode(cipher.nonce).decode('utf-8')
 
-default_key = "QVjmrLDbu7NjS2xA3SXyQ2uKF91op0uYezYLARgrPlc="
-default_nonce = "MXFVdHpDOEo0MDA9"
+default_key = get_env_str('CHACHA_DEFAULT_KEY')
+default_nonce = get_env_str('CHACHA_DEFAULT_NONCE')
 
 
 class ChaChaEncrypt:

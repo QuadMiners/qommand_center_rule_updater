@@ -12,7 +12,7 @@ from rule_updater.process.version_check import RuleUpdateVersionCheckProcess
 logger = logging.getLogger(__name__)
 
 
-class RuleUpdateApplication(Daemon,DatabasePoolMixin):
+class RuleUpdateApplication(Daemon, DatabasePoolMixin):
 
     heartbeat = None
     version_check = None
@@ -29,6 +29,8 @@ class RuleUpdateApplication(Daemon,DatabasePoolMixin):
 
         self.heartbeat = RuleUpdateHeartBeatProcess(get_env_int('HEARTBEAT_TIME'))
         self.version_check = RuleUpdateVersionCheckProcess(get_env_int('VERSION_CHECK_TIME'))
+        #self.rule_update = RuleUpdateProcess(get_env_int('RULE_UPDATE_TIME'))
+
 
         while self.daemon_alive:
             pass
