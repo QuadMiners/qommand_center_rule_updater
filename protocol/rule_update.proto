@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+service NbbUpdateService {
+  //For Test
+  rpc GetQueryResult(RequestData) returns (DataPacket) {}
+
+  //Get DB data or File
+  rpc GetData(RequestData) returns (DataPacket) {}
+  rpc GetFile(RequestData) returns (DataPacket) {}
+
+  //Put DB data or File
+  rpc PutData(DataPacket) returns (PutResponse) {}
+  rpc PutFile(DataPacket) returns (PutResponse) {}
+}
+
+message DataPacket{
+  enum DataType {
+    NONE = 0;
+    RULE = 1;
+    HOST = 2;
+  }
+  DataType data_type = 1;
+  bytes data = 2;
+}
+
+message RequestData{
+  bytes info = 1;
+}
+
+message PutResponse{
+  bool result = 1;
+}
