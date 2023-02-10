@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+message HeartbeatRequest{
+  string license_uuid = 1;
+  string url_data = 2;
+  string user_agent_data = 3;
+}
+
+message HeartbeatResponse{
+  enum ResultStatus {
+    ERROR = 0;
+    OK = 1;
+  }
+  ResultStatus status = 1;
+  string server_name = 2;
+}

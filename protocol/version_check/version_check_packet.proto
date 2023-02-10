@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+//rule_type
+/*
+DEFAULT, QUADMINERS, HUNT, RELAY, NBB
+ */
+
+message VersionCheckRequest{
+  string license_uuid = 1;
+  string rule_type = 2;
+  string rule_version = 3;
+}
+
+message VersionCheckResponse{
+  enum ResultStatus {
+    ERROR = 0;
+    OK = 1;
+  }
+  ResultStatus status = 1;
+  string version = 2;
+}
+
+

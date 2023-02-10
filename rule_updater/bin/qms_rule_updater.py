@@ -6,8 +6,8 @@ from quadlibrary.AppDaemon import Daemon
 from quadlibrary.database import DatabasePoolMixin
 
 from rule_updater.env import get_env_int
-from rule_updater.process.heartbeat import RuleUpdateHeartBeatProcess
-from rule_updater.process.version_check import RuleUpdateVersionCheckProcess
+from rule_updater.rule_update_process.heartbeat import RuleUpdateHeartBeatProcess
+from rule_updater.rule_update_process.version_check import RuleUpdateVersionCheckProcess
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class RuleUpdateApplication(Daemon, DatabasePoolMixin):
 
         self.heartbeat = RuleUpdateHeartBeatProcess(get_env_int('HEARTBEAT_TIME'))
         self.version_check = RuleUpdateVersionCheckProcess(get_env_int('VERSION_CHECK_TIME'))
-        #self.rule_update = RuleUpdateProcess(get_env_int('RULE_UPDATE_TIME'))
+        #self.update = RuleUpdateProcess(get_env_int('RULE_UPDATE_TIME'))
 
 
         while self.daemon_alive:
