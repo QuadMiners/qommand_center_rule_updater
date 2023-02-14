@@ -3,4 +3,5 @@ syntax = "proto3";
 enum VersionType {
   NONE = 0;
   SNORT = 1;
+  //추후 여러가지 데이터 버전들이 추가될것...
 }

@@ -1,12 +1,12 @@
 syntax = "proto3";
-import "data_type.proto";
+
+import "protocol/version/version_type.proto";
 
 
 message VersionDownloadRequest{
   VersionType type = 1;
   string license_uuid = 2;
   int32 version = 3;
-
 }
 
 message VersionDownloadResponse{

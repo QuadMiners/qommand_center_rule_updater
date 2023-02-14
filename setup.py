@@ -4,13 +4,14 @@ import sys
 from distutils.command.clean import clean as _clean
 from distutils.debug import DEBUG
 
+from setuptools import setup
 
 PROTO_FILES = [
-    'protocol/data_type.proto',
-    'protocol/rule_update_service.proto'
+    'protocol/rule_update_service.proto',
     'protocol/heartbeat/heartbeat_packet.proto',
-    'protocol/update/update_rule_packet.proto',
-    'protocol/version_check/version_check_packet.proto',
+    'protocol/version/version_type.proto',
+    'protocol/version/version_download_packet.proto',
+    'protocol/version/version_check_packet.proto',
 ]
 
 def generate_proto(source):
@@ -37,7 +38,7 @@ class clean(_clean):
         for (dirpath, dirnames, filenames) in os.walk("."):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
-                if filepath.find("proto") and (filepath.endswith("_pb2.py") or filepath.endswith(".pyc") or filepath.endswith(".so") or filepath.endswith(".o") or filepath.endswith("_pb2_grpc.py")):
+                if filepath.find("proto") and (filepath.endswith("_pb2.py") or filepath.endswith("_pb2_grpc.py")):
                     os.remove(filepath)
         # _clean is an old-style class, so super() doesn't work.
         _clean.run(self)
@@ -49,6 +50,13 @@ class build_py(object):
             generate_proto(proto)
 
 
-clean().run()
+#clean().run()
 
 build_py().run()
+
+setup(
+    cmdclass={
+        'clean': clean,
+        #'build_py': build_py,
+    },
+)

@@ -2,13 +2,18 @@ import logging
 import os
 import time
 
+import grpc
 from quadlibrary import schedule
 from quadlibrary.AppInterface import SchedulerThreadInterface
+
+from protocol import rule_update_service_pb2_grpc
+from rule_updater.bin.qms_rule_updater import MAX_MESSAGE_LENGTH
+from rule_updater.gRPC.client import QmsUpdateClient
 
 logger = logging.getLogger(__name__)
 
 
-class RuleUpdateHeartBeatProcess(SchedulerThreadInterface):
+class HeartBeatProcess(SchedulerThreadInterface):
 
     def __init__(self, p_time: int):
         super().__init__()
@@ -20,6 +25,16 @@ class RuleUpdateHeartBeatProcess(SchedulerThreadInterface):
                 자신의 서버정보를 데이터베이스에서 읽어와서 
                 grpc로 하트비트 날리는 반복작업 코드 작성 필요.
             """
+            channel = grpc.insecure_channel("127.0.0.1:50051",
+                                            options=[('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH)])
+            send_packet_stub = rule_update_service_pb2_grpc.HeartbeatServiceStub(channel)
+            client = QmsUpdateClient()
+            result = client.do_heartbeat(send_packet_stub)
+
+            """
+            result 값 db에 저장.
+            """
+
             pass
         except Exception as k:
             logger.error("Heartbeat Schedule Exception: {0}".format(k))

@@ -7,7 +7,6 @@ message HeartbeatRequest{
   bool auto_update = 4;
   string url_data = 5;
   string user_agent_data = 6;
-
 }
 
 message HeartbeatResponse{

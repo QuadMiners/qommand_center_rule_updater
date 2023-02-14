@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-import "heartbeat_packet.proto";
-import "version_check_packet.proto";
-import "update_rule_packet.proto";
+import "protocol/heartbeat/heartbeat_packet.proto";
+import "protocol/version/version_check_packet.proto";
+import "protocol/version/version_download_packet.proto";
 
 
-service HeartbeatInfo {
-  rpc HeartbeatInfo (HeartbeatRequest) returns (HeartbeatResponse){}
+service HeartbeatService {
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse){}
 }
 
-service VersionCheck {
+service VersionCheckService {
   rpc VersionCheck (VersionCheckRequest) returns (VersionCheckResponse) {}
 }
 
-service VersionDownload {
+service VersionDownloadService {
   rpc VersionDownload (VersionDownloadRequest) returns (VersionDownloadResponse) {}
 }

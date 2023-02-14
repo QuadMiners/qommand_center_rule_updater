@@ -7,18 +7,20 @@ from quadlibrary.AppInterface import SchedulerThreadInterface
 logger = logging.getLogger(__name__)
 
 
-class VersionCheckProcess(SchedulerThreadInterface):
+class VersionUpdateProcess(SchedulerThreadInterface):
 
     def __init__(self, p_time: int):
         super().__init__()
         self.time_period = p_time
 
-    def version_check(self):
+    def version_update(self):
         try:
-            """
-                자신의 서버 Version정보를 데이터베이스에서 읽어와서 
-                grpc로 Check Packet 날리는 반복작업 코드 작성 필요.
-            """
+
+            # if download...
+            # - download
+            # - parsing & merged
+            # - create file
+
             pass
         except Exception as k:
             logger.error("Heartbeat Schedule Exception: {0}".format(k))
@@ -32,3 +34,5 @@ class VersionCheckProcess(SchedulerThreadInterface):
         while self._exit is False:
             self.scheduler.run_pending()
             time.sleep(1)
+
+
