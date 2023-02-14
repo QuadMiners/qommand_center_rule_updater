@@ -1,23 +1,22 @@
 syntax = "proto3";
+import "data_type.proto";
 
-//rule_type
-/*
-DEFAULT, QUADMINERS, HUNT, RELAY, NBB
- */
 
 message VersionCheckRequest{
-  string license_uuid = 1;
-  string rule_type = 2;
-  string rule_version = 3;
+
+  VersionType type = 1;
+  string license_uuid = 2;
+  int32 version  = 3;
 }
 
 message VersionCheckResponse{
   enum ResultStatus {
-    ERROR = 0;
-    OK = 1;
+    NONE = 0;
+    CHANGE = 1;
   }
   ResultStatus status = 1;
-  string version = 2;
+  string license_uuid = 2;
+  string version = 3;
 }
 
 

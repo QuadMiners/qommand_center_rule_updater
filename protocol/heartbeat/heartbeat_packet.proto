@@ -2,8 +2,12 @@ syntax = "proto3";
 
 message HeartbeatRequest{
   string license_uuid = 1;
-  string url_data = 2;
-  string user_agent_data = 3;
+  string name = 2;
+  string type = 3;
+  bool auto_update = 4;
+  string url_data = 5;
+  string user_agent_data = 6;
+
 }
 
 message HeartbeatResponse{
@@ -12,5 +16,7 @@ message HeartbeatResponse{
     OK = 1;
   }
   ResultStatus status = 1;
-  string server_name = 2;
+  string license_uuid = 2;
+  string name = 3;
+  string type = 4;
 }
