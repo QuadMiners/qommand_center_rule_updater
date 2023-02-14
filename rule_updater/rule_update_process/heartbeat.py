@@ -7,7 +7,7 @@ from quadlibrary import schedule
 from quadlibrary.AppInterface import SchedulerThreadInterface
 
 from protocol import rule_update_service_pb2_grpc
-from rule_updater.bin.qms_rule_updater import MAX_MESSAGE_LENGTH
+from rule_updater.env import get_env_int, get_env_str
 from rule_updater.gRPC.client import QmsUpdateClient
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,8 @@ class HeartBeatProcess(SchedulerThreadInterface):
                 grpc로 하트비트 날리는 반복작업 코드 작성 필요.
             """
             channel = grpc.insecure_channel("127.0.0.1:50051",
-                                            options=[('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH)])
+                                            options=[('grpc.max_receive_message_length',
+                                                      get_env_str('MAX_MESSAGE_LENGTH'))])
             send_packet_stub = rule_update_service_pb2_grpc.HeartbeatServiceStub(channel)
             client = QmsUpdateClient()
             result = client.do_heartbeat(send_packet_stub)
