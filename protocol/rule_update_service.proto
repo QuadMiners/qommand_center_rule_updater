@@ -3,16 +3,12 @@ syntax = "proto3";
 import "protocol/heartbeat/heartbeat_packet.proto";
 import "protocol/version/version_check_packet.proto";
 import "protocol/version/version_download_packet.proto";
+import "protocol/site/site_sync_packet.proto";
 
 
-service HeartbeatService {
+service RuleUpdateService {
   rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse){}
-}
-
-service VersionCheckService {
+  rpc SiteSync(SiteSyncRequest) returns (SiteSyncResponse) {}
   rpc VersionCheck (VersionCheckRequest) returns (VersionCheckResponse) {}
-}
-
-service VersionDownloadService {
   rpc VersionDownload (VersionDownloadRequest) returns (VersionDownloadResponse) {}
 }

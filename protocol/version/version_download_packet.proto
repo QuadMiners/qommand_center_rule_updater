@@ -2,16 +2,16 @@ syntax = "proto3";
 
 import "protocol/version/version_type.proto";
 
-
+// +1 하면서 버전 차이를 전부 팔로우한다.
 message VersionDownloadRequest{
-  VersionType type = 1;
-  string license_uuid = 2;
-  int32 version = 3;
+  string license_uuid = 1;
+  VersionType type = 2;
+  int64 version = 3;
 }
 
 message VersionDownloadResponse{
-  VersionType type = 1;
-  string license_uuid = 2;
-  int32 version = 3;
+  string license_uuid = 1;
+  VersionType type = 2;
+  int64 version = 3;
   bytes data = 4;
 }

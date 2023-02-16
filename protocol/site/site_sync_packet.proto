@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message SiteSyncRequest {
+  string site_id = 1; //null 이면 server_info 한개만
+  string server_info_id = 2; //null 이면 사이트 전체 정보
+}
+
+message SiteSyncResponse {
+  repeated SyncInfo sync_info = 1;
+}
+
+message SyncInfo {
+  string site_id = 1;
+  string server_info_id = 2;
+  string content_type = 3; //insert(add), update, delete
+  string content = 4; //json
+}

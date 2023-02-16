@@ -21,6 +21,7 @@ class HeartBeatProcess(SchedulerThreadInterface):
 
     def heartbeat(self):
         try:
+            print("heartbeat")
             """
                 자신의 서버정보를 데이터베이스에서 읽어와서 
                 grpc로 하트비트 날리는 반복작업 코드 작성 필요.
