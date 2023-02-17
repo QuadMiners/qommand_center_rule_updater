@@ -1,7 +1,7 @@
 syntax = "proto3";
 import "protocol/version/version_type.proto";
 
-
+//여러 버전 관리는 DB Table과 Process로 여러번 요청해서 풀어낸다.
 message VersionCheckRequest{
   string license_uuid = 1;
   VersionType type = 2;
@@ -13,13 +13,3 @@ message VersionCheckResponse{
   VersionType type = 2;
   int64 version = 3;
 }
-
-/*
-한번에 내려줄려면
-Type과 version을 없애고
-string version_info(json형태)를 사용해야한다.
- */
-
-//모든 버전 들어가야한다.
-//response 에 모든 버전정보내려준다.
-//종류별로 리스트로 받는다. 버전타입, 버전

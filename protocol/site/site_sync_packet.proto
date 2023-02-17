@@ -1,17 +1,76 @@
 syntax = "proto3";
 
+
+message SyncInfo {
+  string sync_type = 1;     // site_info or server_info
+  string site_id = 2;
+  string server_info_id = 3;
+  string content_type = 4;  //insert(add), update, delete
+  string content = 5;       //json
+}
+
 message SiteSyncRequest {
-  string site_id = 1; //null 이면 server_info 한개만
-  string server_info_id = 2; //null 이면 사이트 전체 정보
+  int32 request_type = 1;             // request, success
+  string site_id = 2;
+  repeated SyncInfo sync_info = 3;    // repeated인 이유! 정보를 한번에 묶음으로 요청할때
 }
 
 message SiteSyncResponse {
   repeated SyncInfo sync_info = 1;
 }
 
-message SyncInfo {
-  string site_id = 1;
-  string server_info_id = 2;
-  string content_type = 3; //insert(add), update, delete
-  string content = 4; //json
+/*
+site 정보이면?
+{
+“id”:0
+"name": "string",
+"address": "string",
+"tel": "string",
+"desc": "string",
+"partner_info": "string",
+"distributor": "string",
+"engineer": "string",
+"sales": "string",
+"notification_settings": "string",
+"delete": true,
+"created_user": 0
 }
+
+server info 이면?
+{
+“id”:0
+"server_id": 0,
+"server_type": "allinone",
+"server_name": "string",
+"server_model_name": "string",
+"server_model_serial": "string",
+"hostname": "string",
+"ipaddr": "string",
+"ssh_connection_info": "string",
+"os_ver": "string",
+"bps": 1,
+"hardware_key": "string",
+"machine_id": "string",
+"software_info": "string",
+"memory_info": "string",
+"cpu_info": "string",
+"disk_info": "string",
+"server_location_address": "string",
+"server_roll_type": "UPDATE",
+"license_name": "string",
+"license_type": "POC",
+"license_version": "string",
+"nbb_version": "string",
+"start_date": "2023-02-16",
+"end_date": "2023-02-16",
+"auto_update": true,
+"target_hardware_key": "string",
+"target_server_roll_type": "UPDATE",
+"target_ipaddr": "string",
+"target_port": "string",
+"release_rule_version": "string",
+"delete_flag": "Y",
+"site": 0,
+"reg_user": 0
+}
+ */

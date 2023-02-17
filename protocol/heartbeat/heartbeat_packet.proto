@@ -3,16 +3,22 @@ syntax = "proto3";
 /*
 목적 - 살아있는지 확인만 하는 말그대로 하트비트의 목적.
  */
-
-//manager
-//site
-message HeartbeatRequest{
-  string license_uuid = 1;
-  string name = 2;
+message HeartbeatInfo {
+  string site_id = 1;
+  string hardware_key = 2;      //uuid
+  string server_name = 3;       //NH-001
+  string server_roll_type = 4;  //update, relay, nbb
+  string server_type = 5;       //NONE, Allione, Node, sensor,....
 }
 
+message HeartbeatRequest{
+  repeated HeartbeatInfo info = 1;
+}
 
 message HeartbeatResponse{
-  string license_uuid = 1;
-  string name = 2;
+  enum Result {
+    OK = 0;
+    Error = 1;
+  }
+  Result result = 1;
 }
