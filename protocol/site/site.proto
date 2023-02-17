@@ -1,0 +1,38 @@
+syntax = "proto3";
+import "protocol/site/server.proto";
+
+message Site{
+  string name = 1;
+  string address = 2;
+  string tel = 3;
+  string desc = 4;
+  string engineer = 5;
+  string sales = 6;
+}
+
+message SiteRequest {
+  RequestServer server = 1;
+}
+
+message SiteResponse {
+  Site site = 1;
+  repeated Server servers = 2;
+}
+
+/*
+site 정보이면?
+{
+“id”:0
+"name": "string",
+"address": "string",
+"tel": "string",
+"desc": "string",
+"partner_info": "string",
+"distributor": "string",
+"engineer": "string",
+"sales": "string",
+"notification_settings": "string",
+"delete": true,
+"created_user": 0
+}
+*/

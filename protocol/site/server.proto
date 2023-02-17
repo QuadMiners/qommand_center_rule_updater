@@ -1,41 +1,30 @@
 syntax = "proto3";
 
-
-message SyncInfo {
-  string sync_type = 1;     // site_info or server_info
-  string site_id = 2;
-  string server_info_id = 3;
-  string content_type = 4;  //insert(add), update, delete
-  string content = 5;       //json
+message RequestServer{
+  string site_id = 1;
+  string license_uuid = 2;
 }
 
-message SiteSyncRequest {
-  int32 request_type = 1;             // request, success
-  string site_id = 2;
-  repeated SyncInfo sync_info = 3;    // repeated인 이유! 정보를 한번에 묶음으로 요청할때
+message Server{
+  int64 id = 1;
+  string name = 2;
+  string server_type = 3;
+  string version = 4;
+  string host_name= 5;
+  string ipaddr = 6;
+
+  string license_data = 7; /* base64 encoded string */
 }
 
-message SiteSyncResponse {
-  repeated SyncInfo sync_info = 1;
+message ServerRequest {
+  RequestServer server = 1;
+  int64 server_id = 2;
 }
 
+message ServerResponse {
+  Server server = 1;
+}
 /*
-site 정보이면?
-{
-“id”:0
-"name": "string",
-"address": "string",
-"tel": "string",
-"desc": "string",
-"partner_info": "string",
-"distributor": "string",
-"engineer": "string",
-"sales": "string",
-"notification_settings": "string",
-"delete": true,
-"created_user": 0
-}
-
 server info 이면?
 {
 “id”:0

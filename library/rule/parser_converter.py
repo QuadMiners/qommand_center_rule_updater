@@ -1,4 +1,4 @@
-from rule.parser import parse, Rule
+from library.rule.parser import parse, Rule
 
 """
 Rule Class

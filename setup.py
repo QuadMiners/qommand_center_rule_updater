@@ -3,15 +3,17 @@ import subprocess
 import sys
 from distutils.command.clean import clean as _clean
 from distutils.debug import DEBUG
+import setupinfo
 
 from setuptools import setup
 
 PROTO_FILES = [
     'protocol/rule_update_service.proto',
-    'protocol/heartbeat/heartbeat_packet.proto',
-    'protocol/version/version_type.proto',
-    'protocol/version/version_download_packet.proto',
-    'protocol/version/version_check_packet.proto',
+    'protocol/heartbeat/heartbeat.proto',
+    'protocol/data/data.proto',
+    'protocol/license/license.proto',
+    'protocol/site/site.proto',
+    'protocol/site/server.proto',
 ]
 
 def generate_proto(source):
@@ -50,13 +52,25 @@ class build_py(object):
             generate_proto(proto)
 
 
-#clean().run()
 
 build_py().run()
 
 setup(
+    name=setupinfo.name,
+    version=3.1,
+    description=setupinfo.description,
+    keywords=setupinfo.keywords,
+    packages=setupinfo.packages,
+    classifiers=setupinfo.classifiers,
+    include_package_data=True,
+    zip_safe=True,
     cmdclass={
         'clean': clean,
-        #'build_py': build_py,
     },
+    entry_points={
+              'console_scripts': [
+                  'qms_rule_updater= rule_updater.bin.qms_rule_dater:main',
+                  'qms_watchdog = rule_updater.bin.qms_watchdog:main',
+              ],
+          },
 )

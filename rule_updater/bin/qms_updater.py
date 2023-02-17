@@ -10,10 +10,6 @@ from quadlibrary.database import DatabasePoolMixin
 
 from protocol import rule_update_service_pb2_grpc
 from rule_updater.env import get_env_int, get_env_str
-from rule_updater.gRPC.server import QmcHeartbeatService, QmcVersionCheckService, QmcVersionDownloadService
-from rule_updater.rule_update_process.heartbeat import HeartBeatProcess
-from rule_updater.rule_update_process.version_check import VersionCheckProcess
-from rule_updater.rule_update_process.version_update import VersionUpdateProcess
 
 logger = logging.getLogger(__name__)
 
@@ -34,16 +30,12 @@ class RuleUpdateApplication(Daemon, DatabasePoolMixin):
 
         self._start_daemon("Rule Update Daemon Start PID [{0}]".format(os.getpid()))
 
-        #Client Code Start (Scheduler)
-        self.heartbeat = HeartBeatProcess(get_env_int('HEARTBEAT_TIME')).run()
-        self.version_check = VersionCheckProcess(get_env_int('VERSION_CHECK_TIME')).run()
-        self.version_update = VersionUpdateProcess(get_env_int('VERSION_UPDATE_TIME')).run()
-
         #Server Code Start
         heartbeat_service = QmcHeartbeatService()
         version_check_service = QmcVersionCheckService()
         version_download_service = QmcVersionDownloadService()
-        main_server = grpc.server(futures.ThreadPoolExecutor(max_workers=30),
+
+        main_server = grpc.server(futures.ThreadPoolExecutor(max_workers=100),
                                   options=[('grpc.max_receive_message_length', get_env_str('MAX_MESSAGE_LENGTH'))])
 
         rule_update_service_pb2_grpc.add_HeartbeatServiceServicer_to_server(heartbeat_service, main_server)
