@@ -4,7 +4,7 @@ from library.AppInterface import SchedulerThreadInterface
 from rule_updater import ChannelMixin
 
 
-class UpdateClient(ChannelMixin, SchedulerThreadInterface):
+class NBBUpdateClient(ChannelMixin, SchedulerThreadInterface):
     def heartbeat_reg(self):
         self.scheduler.every(self.time_period).seconds.do(self.heartbeat)
 

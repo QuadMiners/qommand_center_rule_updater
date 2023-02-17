@@ -9,7 +9,12 @@ from quadlibrary.AppDaemon import Daemon
 from quadlibrary.database import DatabasePoolMixin
 
 from protocol import rule_update_service_pb2_grpc
+from rule_updater.client import UpdateClient
 from rule_updater.env import get_env_int, get_env_str
+from rule_updater.server.data_server import QmcDataService
+from rule_updater.server.heartbeat_server import QmcHeartbeatService
+from rule_updater.server.license_server import QmcLicenseService
+from rule_updater.server.site_server import QmcSiteService
 
 logger = logging.getLogger(__name__)
 
@@ -30,24 +35,30 @@ class RuleUpdateApplication(Daemon, DatabasePoolMixin):
 
         self._start_daemon("Rule Update Daemon Start PID [{0}]".format(os.getpid()))
 
-        #Server Code Start
-        heartbeat_service = QmcHeartbeatService()
-        version_check_service = QmcVersionCheckService()
-        version_download_service = QmcVersionDownloadService()
+        client = UpdateClient()
+        client.start()
+
+        site_service = QmcSiteService()
+        license_service = QmcLicenseService()
+        hb_service = QmcHeartbeatService()
+        data_service = QmcDataService()
 
         main_server = grpc.server(futures.ThreadPoolExecutor(max_workers=100),
                                   options=[('grpc.max_receive_message_length', get_env_str('MAX_MESSAGE_LENGTH'))])
 
-        rule_update_service_pb2_grpc.add_HeartbeatServiceServicer_to_server(heartbeat_service, main_server)
-        rule_update_service_pb2_grpc.add_VersionCheckServiceServicer_to_server(version_check_service, main_server)
-        rule_update_service_pb2_grpc.add_VersionDownloadServiceServicer_to_server(version_download_service, main_server)
+        rule_update_service_pb2_grpc.add_HeartbeatServiceServicer_to_server(hb_service, main_server)
+        rule_update_service_pb2_grpc.add_DataUpdateServiceServicer_to_server(data_service, main_server)
+        rule_update_service_pb2_grpc.add_LicenseServiceServicer_to_server(license_service, main_server)
+        rule_update_service_pb2_grpc.add_SiteServiceServicer_to_server(site_service, main_server)
         main_server.add_insecure_port('[::]' + get_env_int('GRPC_SERVER_PORT'))
         main_server.start()
 
         while self.daemon_alive:
             print("hello")
-            #Command 처리부분.
             pass
+
+        client._exit = True
+        client.join()
 
         logger.info("--- Rule Update Application Stop ---")
 

@@ -1,19 +1,14 @@
 import logging
 import time
 
-from quadlibrary import schedule
-from quadlibrary.AppInterface import SchedulerThreadInterface
+from rule_updater import ResponseRequestMixin
 
 logger = logging.getLogger(__name__)
 
 
-class VersionUpdateProcess(SchedulerThreadInterface):
+class SiteClinetMixin(ResponseRequestMixin):
 
-    def __init__(self, p_time: int):
-        super().__init__()
-        self.time_period = p_time
-
-    def version_update(self):
+    def GetSite(self):
         try:
 
             # if download...
@@ -25,10 +20,10 @@ class VersionUpdateProcess(SchedulerThreadInterface):
         except Exception as k:
             logger.error("Heartbeat Schedule Exception: {0}".format(k))
 
-    def process(self, data):
+    def GetServer(self, data):
         pass
 
-    def run(self):
+    def UpdateServer(self):
         self.scheduler.every(self.time_period).seconds.do(self.version_check)
 
         while self._exit is False:

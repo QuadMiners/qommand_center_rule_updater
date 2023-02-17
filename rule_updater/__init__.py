@@ -10,7 +10,9 @@ from protocol.site.server_pb2 import RequestServer
 
 logger = logging.getLogger(__name__)
 
+
 class ChannelMixin(object):
+
     @contextlib.contextmanager
     @lru_cache
     def get_update_server_channel(self):
@@ -18,7 +20,12 @@ class ChannelMixin(object):
             Relay Server 일경우 IP 접속
             그거외에 Domain  접속
         """
-        query = """ SELECT update_server from table """
+        if self.server_type == 'nbb':
+            query = """ SELECT value from manager_config 
+                            WHERE keyword_group = 'update' and keyworrd = 'update_server'
+                    """
+        else:
+            query = """ SELECT update_server from table """
         try:
             with db.pmdatabase.get_cursor() as pcursor:
                 pcursor.execute(query)
@@ -34,6 +41,7 @@ class ChannelMixin(object):
                     yield None     # 등록된 IP 가 없음
         except DBException as k:
             logger.error("Get Control Server Channel DB Error ".format(k))
+
 
 class ResponseRequestMixin(ChannelMixin):
 
