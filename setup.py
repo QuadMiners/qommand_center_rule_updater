@@ -69,7 +69,7 @@ setup(
     },
     entry_points={
               'console_scripts': [
-                  'qms_rule_updater= rule_updater.bin.qms_rule_dater:main',
+                  'qms_updater= rule_updater.bin.qms_updater:main',
                   'qms_watchdog = rule_updater.bin.qms_watchdog:main',
               ],
           },

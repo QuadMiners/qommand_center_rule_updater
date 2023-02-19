@@ -6,10 +6,12 @@ from concurrent import futures
 import grpc
 import quadlibrary.AppDefine as app_define
 from quadlibrary.AppDaemon import Daemon
-from quadlibrary.database import DatabasePoolMixin
 
+from library.database import DatabasePoolMixin
 from protocol import rule_update_service_pb2_grpc
+from rule_updater import ChannelMixin
 from rule_updater.client import UpdateClient
+from rule_updater.client.heartbeat import HeartBeatMixin
 from rule_updater.env import get_env_int, get_env_str
 from rule_updater.server.data_server import QmcDataService
 from rule_updater.server.heartbeat_server import QmcHeartbeatService
@@ -19,25 +21,9 @@ from rule_updater.server.site_server import QmcSiteService
 logger = logging.getLogger(__name__)
 
 
-class RuleUpdateApplication(Daemon, DatabasePoolMixin):
-    heartbeat = None
-    version_check = None
-    version_update = None
+class RuleUpdateApplication(Daemon,HeartBeatMixin, ChannelMixin, DatabasePoolMixin):
 
-    def __init__(self, pid):
-        Daemon.__init__(self, pid)
-
-    def run(self, *args, **kwargs):
-
-        logger.info("--- Rule Update Application Start---")
-        #self.dbconnect()
-        app_define.APP_DEBUG = self.debug_mode
-
-        self._start_daemon("Rule Update Daemon Start PID [{0}]".format(os.getpid()))
-
-        client = UpdateClient()
-        client.start()
-
+    def update_server(self):
         site_service = QmcSiteService()
         license_service = QmcLicenseService()
         hb_service = QmcHeartbeatService()
@@ -53,12 +39,27 @@ class RuleUpdateApplication(Daemon, DatabasePoolMixin):
         main_server.add_insecure_port('[::]' + get_env_int('GRPC_SERVER_PORT'))
         main_server.start()
 
-        while self.daemon_alive:
-            print("hello")
-            pass
+    def run(self, *args, **kwargs):
 
-        client._exit = True
-        client.join()
+        """
+            nbb 에서 동작할때는 client 만
+            relay 서버일때는 Server  /  Client 동작
+            update 서버일때는 Server 만
+
+
+            h/w 정보 수집 내용도 포함해야됨.
+        """
+        logger.info("--- Rule Update Application Start---")
+        self.dbconnect()
+        app_define.APP_DEBUG = self.debug_mode
+
+        self.update_server()
+
+        while self.daemon_alive:
+            try:
+                self.heartbeat()
+            except Exception as hb:
+                logger.error("Heartbeat error: {0}".format(hb))
 
         logger.info("--- Rule Update Application Stop ---")
 

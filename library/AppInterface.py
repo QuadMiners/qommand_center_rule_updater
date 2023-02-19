@@ -7,9 +7,10 @@ import threading
 
 from queue import Queue
 
-from quadlibrary import schedule
 
 import logging
+
+from library import schedule
 
 logger = logging.getLogger(__name__)
 
