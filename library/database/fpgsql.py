@@ -32,10 +32,13 @@ class FPgsql(DBInterface):
             raise Exception
 
     @contextmanager
-    def get_cursor(self):
+    def get_cursor(self, cusor_factory=None):
         cursor = None
         try:
-            cursor = self.dbconnect.cursor()
+            if cusor_factory is None:
+                cursor = self.dbconnect.cursor()
+            else:
+                cursor = self.dbconnect.cursor(cusor_factory)
             yield cursor
         except psycopg2.DatabaseError as e:
             logger.error("Psql Error {0}".format(str(e)))

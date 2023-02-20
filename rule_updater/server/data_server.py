@@ -1,25 +1,39 @@
+from library.database.fquery import fetchall_query_to_dict
 from protocol import rule_update_service_pb2_grpc
+from protocol.data import data_pb2
 from rule_updater import RequestCheckMixin
-
+import library.database as db
 
 class QmcDataService(RequestCheckMixin, rule_update_service_pb2_grpc.DataUpdateServiceServicer):
 
     def GetVersions(self, request, context):
-        """
-        VersionType type = 1;       #데이터 버전 타입 확인
-        string license_uuid = 2;    #인가된 라이센스인지 체크
-        int32 version  = 3;         #클라이언트가 현재 자신의 어떤 버전을 사용중인지 정보 업데이트
-        """
 
-        #서버의 버전 정보 내려줌
-        status = version_check_packet_pb2.VersionCheckResponse.CHANGE
-        packet = version_check_packet_pb2.VersionCheckResponse(status=status,
-                                                               license_uuid="1111-1111-1111-1111",
-                                                               version=10001)
-        return packet
+        site_id = request.server.site_id
+        license_uuid = request.server.license_uuid
+
+        query = f"SELECT * FROM server_info WHERE site_id = '{site_id}' AND license_uuid = '{license_uuid}'"
+        result_dict = fetchall_query_to_dict(query)
+
+        response = data_pb2.DataVersionResponse()
+        for i in range(len(result_dict)):
+            version = data_pb2.DataVersion(type=result_dict[i]["type"], version=result_dict[i]["version"])
+            response.versions.append(version)
+
+        return response
 
     def GetData(self, request, context):
-        pass
+        request_server = request.server
+        site_id = request_server.site_id
+        license_uuid = request_server.license_uuid
+
+        data_version = request.version
+        data_type = data_version.type
+        data_version = data_version.version
+
+        response = data_pb2.DataResponse()
+        response.versions = ""
+        response.data = ""
+
         return None
 
     def UpdateVersion(self, request, context):

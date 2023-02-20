@@ -4,10 +4,12 @@ import logging
 from concurrent import futures
 
 import grpc
-import quadlibrary.AppDefine as app_define
-from quadlibrary.AppDaemon import Daemon
+import daemon
 
 from library.database import DatabasePoolMixin
+import library.database as db
+from library.database.fquery import fetchall_query_to_dict
+
 from protocol import rule_update_service_pb2_grpc
 from rule_updater import ChannelMixin
 from rule_updater.client import UpdateClient
@@ -21,7 +23,7 @@ from rule_updater.server.site_server import QmcSiteService
 logger = logging.getLogger(__name__)
 
 
-class RuleUpdateApplication(Daemon,HeartBeatMixin, ChannelMixin, DatabasePoolMixin):
+class RuleUpdateApplication(daemon, HeartBeatMixin, ChannelMixin, DatabasePoolMixin):
 
     def update_server(self):
         site_service = QmcSiteService()
@@ -36,7 +38,7 @@ class RuleUpdateApplication(Daemon,HeartBeatMixin, ChannelMixin, DatabasePoolMix
         rule_update_service_pb2_grpc.add_DataUpdateServiceServicer_to_server(data_service, main_server)
         rule_update_service_pb2_grpc.add_LicenseServiceServicer_to_server(license_service, main_server)
         rule_update_service_pb2_grpc.add_SiteServiceServicer_to_server(site_service, main_server)
-        main_server.add_insecure_port('[::]' + get_env_int('GRPC_SERVER_PORT'))
+        main_server.add_insecure_port(get_env_str('GRPC_SERVER_IPV4') + get_env_str('GRPC_SERVER_PORT'))
         main_server.start()
 
     def run(self, *args, **kwargs):
@@ -46,14 +48,22 @@ class RuleUpdateApplication(Daemon,HeartBeatMixin, ChannelMixin, DatabasePoolMix
             relay 서버일때는 Server  /  Client 동작
             update 서버일때는 Server 만
 
-
             h/w 정보 수집 내용도 포함해야됨.
         """
         logger.info("--- Rule Update Application Start---")
         self.dbconnect()
-        app_define.APP_DEBUG = self.debug_mode
+        fetchall_query_to_dict("SELECT ")
 
-        self.update_server()
+
+        mode = 'UPDATE'
+
+        if mode == 'nbb':
+            self.update_server()
+        elif mode == 'relay':
+            self.update_server()
+
+        else:
+            self.update_server()
 
         while self.daemon_alive:
             try:
@@ -65,7 +75,8 @@ class RuleUpdateApplication(Daemon,HeartBeatMixin, ChannelMixin, DatabasePoolMix
 
 
 def main():
-    RuleUpdateApplication(12345).run()
+    server_daemon = RuleUpdateApplication()
+    server_daemon.run()
     pass
 
 

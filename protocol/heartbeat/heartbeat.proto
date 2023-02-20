@@ -11,9 +11,8 @@ enum ServerStatus{
 }
 
 enum DataUpdateFlag {
-  NONE = 0;
+  NONE_FLAG = 0;
   UPDATE = 1;
-
 }
 
 enum StringType {

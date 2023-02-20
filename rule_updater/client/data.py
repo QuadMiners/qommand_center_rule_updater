@@ -21,8 +21,10 @@ class DataClientMixin(ResponseRequestMixin):
             channel = self.get_update_server_channel()
 
             request_server = self.get_request_server()
+
             stub = rule_update_service_pb2_grpc.DataUpdateServiceStubata(channel)
             retrying_stub_methods(stub)
+
             response_data = stub.GetVersions(DataVersionRequest(server=request_server), timeout=10)
             self.check_versions(response_data.versions)
 

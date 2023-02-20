@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from rule_updater.env import get_env_str, get_env_int
 from .fdatabase import DBException, DBInterface, DBInfo
 from .fpgsql import FPgsqlPool, FPgsql
 
@@ -12,12 +12,12 @@ pmdatabase = None
 
 
 dbinfo = dict()
-dbinfo['dbname'] = 'quadminers'
-dbinfo["user"] = 'quadminers'
-dbinfo["password"] = 'quadminers'
-dbinfo["host"] = '127.0.0.1'
-dbinfo["port"] = 10090
-dbinfo["schema"] = 'black'
+dbinfo['dbname'] = get_env_str("POSTGRES_NAME")
+dbinfo["user"] = get_env_str("POSTGRES_USER")
+dbinfo["password"] = get_env_str("POSTGRES_PASSWORD")
+dbinfo["host"] = get_env_str("POSTGRES_HOST")
+dbinfo["port"] = get_env_int("POSTGRES_PORT")
+dbinfo["schema"] = get_env_str("POSTGRES_SCHEMA")
 
 
 def global_db_connect(config=True, contents=True):
@@ -27,6 +27,6 @@ def global_db_connect(config=True, contents=True):
         
 
 class DatabasePoolMixin(object):
-    def dbconnect(self, config=True,pool_cnt=2):
+    def dbconnect(self, config=True, pool_cnt=2):
         global pmdatabase
         pmdatabase = FPgsqlPool(dbinfo, pool_cnt)
