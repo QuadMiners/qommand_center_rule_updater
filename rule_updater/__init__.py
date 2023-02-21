@@ -8,6 +8,7 @@ import grpc
 import library.database as db
 from library.database import DBException
 from library.database.fquery import fetchone_query_to_dict
+from protocol.site import server_pb2
 from protocol.site.server_pb2 import RequestServer
 from rule_updater.env import get_env_str
 
@@ -15,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class ChannelMixin(object):
+
+    server_type = 'update'
 
     @contextlib.contextmanager
     @lru_cache
@@ -34,52 +37,55 @@ class ChannelMixin(object):
         else:
             query = """ SELECT * from update_server_parent_config """
 
-        try:
-            result_dict = fetchone_query_to_dict(query)
-            if result_dict is 0:
-                logger.error("Can't Load update_server_parent_config")
-                yield None  # 등록된 IP 가 없음
-            else:
-                if self.server_type == 'relay':
-                    hostname = get_env_str("GRPC_SERVER_IPV4")
+            try:
+                result_dict = fetchone_query_to_dict(query)
+                if result_dict is 0:
+                    logger.error("Can't Load update_server_parent_config")
+                    yield None  # 등록된 IP 가 없음
                 else:
-                    hostname = result_dict["hostname"]
-                port = result_dict["port"]
-                sign_flag = result_dict["sign_flag"]
-                sign_file_path = result_dict["sign_file"]
+                    if self.server_type == 'relay':
+                        hostname = get_env_str("GRPC_SERVER_IPV4")
+                    else:
+                        hostname = result_dict["hostname"]
+                    port = result_dict["port"]
+                    sign_flag = result_dict["sign_flag"]
+                    sign_file_path = result_dict["sign_file"]
 
-            if sign_flag is "Y":
-                with open(sign_file_path, "rb") as f:
-                    cert = f.read()
-                credentials = grpc.ssl_channel_credentials(root_certificates=cert)
-                channel = grpc.secure_channel('{}:{}'.format(hostname, port),
-                                              credentials=credentials,
-                                              options=[('grpc.lb_policy_name', 'pick_first'),
-                                                       ('grpc.enable_retries', 0),
-                                                       ('grpc.keepalive_timeout_ms', 10000)],
-                                              compression=grpc.Compression.Gzip)
+                if sign_flag is "Y":
+                    with open(sign_file_path, "rb") as f:
+                        cert = f.read()
+                    credentials = grpc.ssl_channel_credentials(root_certificates=cert)
+                    channel = grpc.secure_channel('{}:{}'.format(hostname, port),
+                                                  credentials=credentials,
+                                                  options=[('grpc.lb_policy_name', 'pick_first'),
+                                                           ('grpc.enable_retries', 0),
+                                                           ('grpc.keepalive_timeout_ms', 10000)],
+                                                  compression=grpc.Compression.Gzip)
 
-                yield channel
+                    yield channel
 
-            else:
-                channel = grpc.insecure_channel(target='{}:{}'.format(hostname, port),
-                                                options=[('grpc.lb_policy_name', 'pick_first'),
-                                                         ('grpc.enable_retries', 0),
-                                                         ('grpc.keepalive_timeout_ms', 10000)],
-                                                compression=grpc.Compression.Gzip)
-                yield channel
+                else:
+                    channel = grpc.insecure_channel(target='{}:{}'.format(hostname, port),
+                                                    options=[('grpc.lb_policy_name', 'pick_first'),
+                                                             ('grpc.enable_retries', 0),
+                                                             ('grpc.keepalive_timeout_ms', 10000)],
+                                                    compression=grpc.Compression.Gzip)
+                    yield channel
 
-        except DBException as k:
-            logger.error("Get Control Server Channel DB Error ".format(k))
+            except DBException as k:
+                logger.error("Get Control Server Channel DB Error ".format(k))
 
 
 class ResponseRequestMixin(ChannelMixin):
 
     @lru_cache
     def get_request_server(self):
-        request_server = RequestServer()
-        request_server.site_id = "site"
-        request_server.license_uuid = "11111-"
+        request_server = server_pb2.RequestServer()
+
+        query = "SELECT * FROM site"
+        result_dict = fetchone_query_to_dict(query)
+        request_server.site_id = result_dict["id"]
+        request_server.license_uuid #자신의 라이센스 아이디 이거 어떻게 구하나..?
         return request_server
 
 class RequestCheckMixin():
@@ -91,8 +97,13 @@ class RequestCheckMixin():
         license_uuid = request_server.license_uuid
 
         query = """
-                
-            """
+                SELECT * FROM server_info WHERE site = '{site_id}' AND license_uuid = '{license_uuid}'
+                """
+        result_dict = fetchone_query_to_dict(query)
+        if result_dict is None or result_dict <= 0:
+            return False # 허용 안된 서버
+        else:
+            return True # 허용된 서버
 
 
 

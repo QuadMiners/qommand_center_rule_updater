@@ -24,9 +24,7 @@ class QmcHeartbeatService(RequestCheckMixin, rule_update_service_pb2_grpc.Heartb
         response_versions = data_pb2.DataVersion()
 
         # 결과값 설정
-        query = f"SELECT * FROM server_info WHERE site_id = '{site_id}' AND hardware_key = '{license_uuid}'"
-        result_dict = fetchone_query_to_dict(query)
-        if result_dict is 0:
+        if self.request_check(request.server) == False:
             response_status = heartbeat_pb2.ServerStatus.NOTFOUND
             return heartbeat_pb2.HeartbeatResponse(status=response_status,
                                                    site_update_flag=None,
@@ -35,35 +33,35 @@ class QmcHeartbeatService(RequestCheckMixin, rule_update_service_pb2_grpc.Heartb
         else:
             response_status = heartbeat_pb2.ServerStatus.REGISTER
 
-        query = f"SELECT * FROM site WHERE id = '{site_id}'"
-        result_dict = fetchone_query_to_dict(query)
-        if result_dict["update_server_status"] is False:
-            response_site_update_flag = heartbeat_pb2.DataUpdateFlag.NONE_FLAG
-        else:
-            response_site_update_flag = heartbeat_pb2.DataUpdateFlag.UPDATE
+            query = f"SELECT * FROM site WHERE id = '{site_id}'"
+            result_dict = fetchone_query_to_dict(query)
+            if result_dict["update_server_status"] is False:
+                response_site_update_flag = heartbeat_pb2.DataUpdateFlag.NONE_FLAG
+            else:
+                response_site_update_flag = heartbeat_pb2.DataUpdateFlag.UPDATE
 
-        query = f"SELECT * FROM server_license WHERE id = '{license_uuid}' "
-        result_dict = fetchone_query_to_dict(query)
-        if result_dict["update_server_status"] is False:
-            response_license_update_flag = heartbeat_pb2.DataUpdateFlag.NONE_FLAG
-        else:
-            response_license_update_flag = heartbeat_pb2.DataUpdateFlag.UPDATE
+            query = f"SELECT * FROM server_license WHERE id = '{license_uuid}' "
+            result_dict = fetchone_query_to_dict(query)
+            if result_dict["update_server_status"] is False:
+                response_license_update_flag = heartbeat_pb2.DataUpdateFlag.NONE_FLAG
+            else:
+                response_license_update_flag = heartbeat_pb2.DataUpdateFlag.UPDATE
 
-        # 결과값 - 데이터 타입, 버전 입력
-        query = f"SELECT * FROM rule_status"
-        result_dict = fetchall_query_to_dict(query)
-        if len(result_dict) > 0:
-            for i in range(len(result_dict)):
-                version = data_pb2.DataVersion(type=result_dict[i]["type"],
-                                               version=result_dict[i]["version"])
-                response_versions.append(version)
-        else:
-            response_versions = None
+            # 결과값 - 데이터 타입, 버전 입력
+            query = f"SELECT * FROM rule_status"
+            result_dict = fetchall_query_to_dict(query)
+            if len(result_dict) > 0:
+                for i in range(len(result_dict)):
+                    version = data_pb2.DataVersion(type=result_dict[i]["type"],
+                                                   version=result_dict[i]["version"])
+                    response_versions.append(version)
+            else:
+                response_versions = None
 
-        # 최종 결과값 도출 상태, 버전 데이터등..
-        response = heartbeat_pb2.HeartbeatResponse(status=response_status,
-                                                   site_update_flag=response_site_update_flag,
-                                                   license_update_flag=response_license_update_flag,
-                                                   versions=response_versions)
+            # 최종 결과값 도출 상태, 버전 데이터등..
+            response = heartbeat_pb2.HeartbeatResponse(status=response_status,
+                                                       site_update_flag=response_site_update_flag,
+                                                       license_update_flag=response_license_update_flag,
+                                                       versions=response_versions)
 
-        return response
+            return response

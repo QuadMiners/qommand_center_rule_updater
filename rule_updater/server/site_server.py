@@ -83,12 +83,17 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
         license_data = request_server.license_data
 
         query = f"""UPDATE server_info
-                SET name = '{name}', server_type = '{server_type}', version = '{version}',
-                host_name = '{host_name}', ipaddr = '{ipaddr}', 
+                SET name = '{name}', 
+                type = '{server_type}', 
+                version = '{version}', 
+                hostname = '{host_name}', 
+                ipaddr = '{ipaddr}', 
                 license_data = decode('{license_data}', 'base64')
                 WHERE id = {id};
                 """
 
         result = fetchall_query(query)
-
-        return None
+        if result is None or 0:
+            return None
+        else:
+            return None

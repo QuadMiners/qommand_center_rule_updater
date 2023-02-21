@@ -3,12 +3,17 @@ import time
 
 import grpc
 
+from library.database.fquery import fetchall_query_to_dict
 from library.rpc.retry import retrying_stub_methods, RetriesExceeded
 from protocol import rule_update_service_pb2_grpc
 from protocol.data.data_pb2 import DataType
+from protocol.heartbeat import heartbeat_pb2
 from protocol.heartbeat.heartbeat_pb2 import StringData, HeartbeatRequest, ServerStatus, DataUpdateFlag
+from protocol.site import server_pb2
 from rule_updater import ResponseRequestMixin
 from rule_updater.client.data import DataClientMixin
+from rule_updater.client.license import LicenseClientMixin
+from rule_updater.client.site import SiteClientMixin
 from rule_updater.env import get_env_str
 
 logger = logging.getLogger(__name__)
@@ -34,7 +39,11 @@ class HeartBeatMixin(DataClientMixin, ResponseRequestMixin):
 
             request_server = self.get_request_server()
             local_data = self.get_data()
-            response = stub.HeartbeatInfo(HeartbeatRequest(server=request_server, datas=local_data), timeout=10)
+            heartbeat_request_packet = heartbeat_pb2.HeartbeatRequest()
+            heartbeat_request_packet.server = request_server
+            heartbeat_request_packet.datas = local_data
+
+            response = stub.Heartbeat(heartbeat_request_packet, timeout=10)
 
             if response.status == ServerStatus.REGISTER:
                 """
@@ -43,18 +52,22 @@ class HeartBeatMixin(DataClientMixin, ResponseRequestMixin):
                     """
                         site api  call
                     """
-                    pass
+                    SiteClientMixin().GetSite()
 
                 if response.license_update_flag == DataUpdateFlag.UPDATE:
                     """
                         license api call
                     """
-                    pass
+                    LicenseClientMixin().Status()
 
+                """
+                    check version
+                """
                 self.check_versions(response.versions)
 
             elif response.status == ServerStatus.NOTFOUND:
                 """
+                    Do Nothing
                 """
                 pass
 
