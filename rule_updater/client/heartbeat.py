@@ -30,8 +30,7 @@ class HeartBeatMixin(DataClientMixin, ResponseRequestMixin):
     def heartbeat(self):
         try:
             """
-                자신의 서버정보를 데이터베이스에서 읽어와서 
-                grpc로 하트비트 날리는 반복작업 코드 작성 필요.
+                하트비트 Request - 자신의 서버 정보(site_id, license_uuid)를 전송한다.
             """
             channel = self.get_update_server_channel()
             stub = rule_update_service_pb2_grpc.HeartbeatServiceStub(channel)
@@ -42,7 +41,7 @@ class HeartBeatMixin(DataClientMixin, ResponseRequestMixin):
             heartbeat_request_packet = heartbeat_pb2.HeartbeatRequest()
             heartbeat_request_packet.server = request_server
             heartbeat_request_packet.datas = local_data
-
+            #전송후 리턴값 받아옴
             response = stub.Heartbeat(heartbeat_request_packet, timeout=10)
 
             if response.status == ServerStatus.REGISTER:

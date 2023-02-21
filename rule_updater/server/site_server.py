@@ -15,7 +15,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
 
         response = site_pb2.SiteResponse()
 
-        query = f"SELECT * FROM site_info WHERE site_id = '{site_id}' AND license_uuid = '{license_uuid}'"
+        query = f"SELECT * FROM site WHERE site_id = '{site_id}'"
         result_dict = fetchone_query_to_dict(query)
         site = site_pb2.Site(name=result_dict["type"],
                              address=result_dict["version"],
@@ -25,17 +25,26 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                              sales=result_dict["sales"])
         response.site = site
 
-        query = f"SELECT * FROM server_info WHERE site_id = '{site_id}' AND license_uuid = '{license_uuid}'"
-        result_dict = fetchall_query_to_dict(query)
-        for i in range(len(result_dict)):
-            server = server_pb2.Server( id=result_dict[i]["id"],
-                                        name=result_dict[i]["name"],
-                                        server_type=result_dict[i]["server_type"],
-                                        version=result_dict[i]["version"],
-                                        host_name=result_dict[i]["host_name"],
-                                        ipaddr=result_dict[i]["ipaddr"],
-                                        license_data=result_dict[i]["license_data"])
+
+        query = f"SELECT * FROM server_info WHERE site_id = '{site_id}'"
+        result_dict_list = fetchall_query_to_dict(query)
+        for result_dict in result_dict_list:
+            server = server_pb2.Server( id=result_dict["id"],
+                                        name=result_dict["name"],
+                                        server_type=result_dict["server_type"],
+                                        version=result_dict["version"],
+                                        host_name=result_dict["host_name"],
+                                        ipaddr=result_dict["ipaddr"],
+                                        license_data=result_dict["license_data"])
             response.servers.append(server)
+
+        """
+            Site 정보 모두 업데이트 내려줬다고 체크.
+        """
+        query = f"UPDATE black.site " \
+                f"SET update_server_status = True " \
+                f"WHERE site_id = '{site_id}'"
+        fetchall_query(query)
 
         return response
 
@@ -59,19 +68,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
 
         return response
 
-    # 서버정보가 업데이트되면 License 에 일부 정보를 업데이트 한다.
-    """ 리퀘스트 정보
-    message Server{
-      int64 id = 1;
-      string name = 2;
-      string server_type = 3;
-      string version = 4;
-      string host_name= 5;
-      string ipaddr = 6;
-    
-      string license_data = 7; /* base64 encoded string */
-    }
-    """
+
     def UpdateServer(self, request,context):
         request_server = request.server
         id = request_server.id

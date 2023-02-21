@@ -1,4 +1,3 @@
-# idstools~=0.6.4 을 기반으로 만들어진 파싱코드
 # https://github.com/jasonish/py-idstools/blob/master/idstools/rule.py
 # Latest commit e2f8677 on 12 May
 # History: https://github.com/jasonish/py-idstools/commit/e2f86770a9f03ce1b60e5c075fb2318d6c6c7826

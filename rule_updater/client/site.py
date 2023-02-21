@@ -12,14 +12,24 @@ logger = logging.getLogger(__name__)
 
 class SiteClientMixin(ResponseRequestMixin):
 
+    """
+        client가 서버에게 사이트, 서버 정보를 요청하는 함수.
+    """
     def GetSite(self):
         channel = self.get_update_server_channel()
-        request_server = self.get_request_server()
-
         stub = rule_update_service_pb2_grpc.SiteServiceStub(channel)
         retrying_stub_methods(stub)
 
-        response_data = stub.GetSite(site_pb2.SiteRequest(server=request_server), timeout=10)
+        """
+            서버에게 요청 response_data에 값 받아옴
+        """
+        request_packet = site_pb2.SiteRequest()
+        request_packet.server = self.get_request_server()
+        response_data = stub.GetSite(request_packet, timeout=10)
+
+        """
+            받아온 사이트 데이터 파싱, 업데이트
+        """
         site_info = response_data.site
         name = site_info.name
         address = site_info.address
@@ -38,6 +48,9 @@ class SiteClientMixin(ResponseRequestMixin):
 
         result = fetchone_query_to_dict(query)
 
+        """
+            받아온 서버 데이터 파싱, 업데이트
+        """
         for server in response_data.servers:
             server_id = server.id
             server_name = server.name
@@ -60,15 +73,18 @@ class SiteClientMixin(ResponseRequestMixin):
             result = fetchone_query_to_dict(query)
 
 
-
     def GetServer(self, data):
         channel = self.get_update_server_channel()
-        request_server = self.get_request_server()
-
         stub = rule_update_service_pb2_grpc.SiteServiceStub(channel)
         retrying_stub_methods(stub)
 
-        response_data = stub.GetSite(site_pb2.ServerRequest(server=request_server, server_id=1), timeout=10)
+        """
+            서버에게 단일 서버 정보만 요청한다.
+        """
+        request_packet = site_pb2.ServerRequest()
+        request_packet.server = self.get_request_server()
+        request_packet.server_id = None
+        response_data = stub.GetSite(request_packet, timeout=10)
         server = response_data.server
 
     def UpdateServer(self):

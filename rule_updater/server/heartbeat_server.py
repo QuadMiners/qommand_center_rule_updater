@@ -49,16 +49,16 @@ class QmcHeartbeatService(RequestCheckMixin, rule_update_service_pb2_grpc.Heartb
 
             # 결과값 - 데이터 타입, 버전 입력
             query = f"SELECT * FROM rule_status"
-            result_dict = fetchall_query_to_dict(query)
+            result_dict_list = fetchall_query_to_dict(query)
             if len(result_dict) > 0:
-                for i in range(len(result_dict)):
-                    version = data_pb2.DataVersion(type=result_dict[i]["type"],
-                                                   version=result_dict[i]["version"])
+                for result_dict in result_dict_list:
+                    version = data_pb2.DataVersion(type=result_dict["type"],
+                                                   version=result_dict["version"])
                     response_versions.append(version)
             else:
                 response_versions = None
 
-            # 최종 결과값 도출 상태, 버전 데이터등..
+            # 최종 결과값 도출 - 상태, 버전 데이터등..
             response = heartbeat_pb2.HeartbeatResponse(status=response_status,
                                                        site_update_flag=response_site_update_flag,
                                                        license_update_flag=response_license_update_flag,

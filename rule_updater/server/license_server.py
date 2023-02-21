@@ -1,4 +1,4 @@
-from library.database.fquery import fetchall_query_to_dict
+from library.database.fquery import fetchall_query_to_dict, fetchall_query, fetchone_query_to_dict
 from protocol import rule_update_service_pb2_grpc
 from protocol.license import license_pb2
 from rule_updater import RequestCheckMixin
@@ -30,6 +30,30 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         hardware_uuid = request.hardware_uuid
         machine_id = request.machine_id
 
-        status = license_pb2.LicenseStatus.APPROVE
-        response = license_pb2.LicenseStatus(status=status,
-                                             license_data="")
+        query = f"SELECT * FROM site_license_status_approve " \
+                f"WHERE server_info_id = (" \
+                    f"SELECT id FROM server_info " \
+                    f"WHERE hardware_key = '{hardware_uuid}' AND machine_id = '{machine_id}'" \
+                f")"
+        result_dict = fetchone_query_to_dict(query)
+
+        if result_dict['approve_type'] == "confirm":
+            status = license_pb2.LicenseStatus.APPROVE
+            response = license_pb2.LicenseStatus(status=status,
+                                                 license_data="무엇을 보내야하나?")
+        else:
+            return None
+
+        """
+            Site 정보 모두 업데이트 내려줬다고 체크. server_info_id 에서 join하여 검색
+        """
+        query = f"UPDATE black.server_license " \
+                f"SET update_server_status = True " \
+                f"WHERE server_info_id = (" \
+                    f"SELECT id FROM server_info " \
+                    f"WHERE hardware_key = '{hardware_uuid}' AND machine_id = '{machine_id}'" \
+                f")"
+
+        fetchall_query(query)
+
+        return response

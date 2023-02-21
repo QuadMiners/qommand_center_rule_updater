@@ -30,6 +30,9 @@ class LicenseClientMixin(ResponseRequestMixin):
 
         if license_status == license_pb2.LicenseStatus.APPROVE:
             license_data = response_data.license_data
+            """
+                license_data 처리.. 어디에 넣어야 하는가?
+            """
         else:
             pass
 
@@ -47,6 +50,9 @@ class LicenseClientMixin(ResponseRequestMixin):
 
         if license_status == license_pb2.LicenseStatus.APPROVE:
             license_data = response_data.license_data
+            """
+                license_data 처리.. 어디에 넣어야 하는가?
+            """
         else:
             pass
 

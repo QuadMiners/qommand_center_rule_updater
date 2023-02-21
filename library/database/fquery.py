@@ -1,9 +1,7 @@
-
 import psycopg2.extras
 import library.database as db
 
 db.global_db_connect()
-
 
 def fetchall_query(query: str, database=db):
     with database.pmdatabase.get_cursor() as pcursor:
@@ -41,7 +39,7 @@ def fetchone_query_to_dict(query: str, database=db):
             return None
 
 
-def make_query_from_dict(table_name, data_dict, where_dict=None):
+def make_update_query_by_dict(table_name, data_dict, where_dict=None):
     set_clause = ", ".join([f"{key} = {value}" for key, value in data_dict.items()])
     where_clause = " AND ".join([f"{key} = {value}" for key, value in where_dict.items()])
 
@@ -53,9 +51,10 @@ def make_query_from_dict(table_name, data_dict, where_dict=None):
     return update_query
 
 
-
+"""
+Test Code
 a_dict = {"aaa" : "123", "bbb" : "456"}
 b_dict = {"qwe" : "12345", "wer" : "12345", "ert" : "123456"}
 
-print(update_table_from_dict("black.hello",a_dict, a_dict))
-
+print(make_update_query_by_dict("black.hello",a_dict, a_dict))
+"""

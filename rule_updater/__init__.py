@@ -9,8 +9,6 @@ import library.database as db
 from library.database import DBException
 from library.database.fquery import fetchone_query_to_dict
 from protocol.site import server_pb2
-from protocol.site.server_pb2 import RequestServer
-from rule_updater.env import get_env_str
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +42,7 @@ class ChannelMixin(object):
                     yield None  # 등록된 IP 가 없음
                 else:
                     if self.server_type == 'relay':
+                        from rule_updater.env import get_env_str
                         hostname = get_env_str("GRPC_SERVER_IPV4")
                     else:
                         hostname = result_dict["hostname"]
