@@ -52,8 +52,6 @@ class RuleUpdateApplication(daemon, HeartBeatMixin, ChannelMixin, DatabasePoolMi
         """
         logger.info("--- Rule Update Application Start---")
         self.dbconnect()
-        fetchall_query_to_dict("SELECT ")
-
 
         mode = 'UPDATE'
 
@@ -61,7 +59,6 @@ class RuleUpdateApplication(daemon, HeartBeatMixin, ChannelMixin, DatabasePoolMi
             self.update_server()
         elif mode == 'relay':
             self.update_server()
-
         else:
             self.update_server()
 

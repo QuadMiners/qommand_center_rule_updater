@@ -84,7 +84,12 @@ class ResponseRequestMixin(ChannelMixin):
         query = "SELECT * FROM site"
         result_dict = fetchone_query_to_dict(query)
         request_server.site_id = result_dict["id"]
-        request_server.license_uuid #자신의 라이센스 아이디 이거 어떻게 구하나..?
+
+        """
+            자신의 라이센스 아이디 어떻게 구하지..?
+            update_server_info_model에 uuid ?
+        """
+        request_server.license_uuid
         return request_server
 
 class RequestCheckMixin():

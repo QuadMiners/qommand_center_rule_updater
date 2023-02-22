@@ -50,11 +50,3 @@ def make_update_query_by_dict(table_name, data_dict, where_dict=None):
 
     return update_query
 
-
-"""
-Test Code
-a_dict = {"aaa" : "123", "bbb" : "456"}
-b_dict = {"qwe" : "12345", "wer" : "12345", "ert" : "123456"}
-
-print(make_update_query_by_dict("black.hello",a_dict, a_dict))
-"""
