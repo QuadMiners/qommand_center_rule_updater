@@ -19,7 +19,7 @@ from rule_updater.env import get_env_str
 logger = logging.getLogger(__name__)
 
 
-class HeartBeatMixin(DataClientMixin, ResponseRequestMixin):
+class HeartBeatMixin(DataClientMixin,ResponseRequestMixin):
 
     def get_data(self):
         datas = list()

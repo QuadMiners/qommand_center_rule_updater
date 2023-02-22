@@ -91,7 +91,6 @@ class DataClientMixin(ResponseRequestMixin):
         retrying_stub_methods(stub)
         stub.UpdateVersion(DataRequest(server=request_server, version=data_version), timeout=10)
 
-
     def __update_data_version(self, data_version, data):
         type = data_version.type
         version = data_version.version

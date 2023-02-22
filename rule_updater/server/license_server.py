@@ -27,14 +27,14 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         return response
 
     def Status(self, request, context):
-        hardware_uuid = request.hardware_uuid
-        machine_id = request.machine_id
 
-        query = f"SELECT * FROM site_license_status_approve " \
-                f"WHERE server_info_id = (" \
-                    f"SELECT id FROM server_info " \
-                    f"WHERE hardware_key = '{hardware_uuid}' AND machine_id = '{machine_id}'" \
-                f")"
+        query = """ SELECT * FROM site_license_status_approve 
+                    WHERE server_info_id = (SELECT id 
+                                        FROM server_info 
+                                        WHERE hardware_key = '{hardware_uuid}' 
+                                        AND machine_id = '{machine_id}' )
+                """.format(**dict(hardware_uuid=request.hardware_uuid,
+                                  machine_id =request.machine_id))
         result_dict = fetchone_query_to_dict(query)
 
         if result_dict['approve_type'] == "confirm":

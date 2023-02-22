@@ -3,65 +3,73 @@ from protocol import rule_update_service_pb2_grpc
 from protocol.data import data_pb2
 from protocol.heartbeat import heartbeat_pb2
 from protocol.heartbeat.heartbeat_pb2 import ServerStatus, HeartbeatResponse, DataUpdateFlag
+import library.database as db
 
 from rule_updater import RequestCheckMixin
 
 
 class QmcHeartbeatService(RequestCheckMixin, rule_update_service_pb2_grpc.HeartbeatServiceServicer):
+    def _site(self, site_id):
+        query = f"SELECT update_server_status FROM site WHERE id = '{site_id}'"
+        update_server_status = False
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.execute(query)
+            if pcursor.rowcount > 0:
+                update_server_status = pcursor.fetchone()
+        return update_server_status
+
+    def _data_version(self):
+        query = "SELECT teyp, version FROM data_version"
+        response_versions = list()
+
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.execute(query)
+            rows = pcursor.fetchall()
+            for row in rows:
+                response_versions.append(data_pb2.DataVersion(type=row[0], version=row[1]))
+
+        return response_versions
+
+    def _data_license(self):
+        query = "SELECT teyp, version FROM site_license"
+        response_versions = data_pb2.DataVersion()
+
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.execute(query)
+            rows = pcursor.fetchall()
+            for row in rows:
+                response_versions.append(data_pb2.DataVersion(type=row[0], version=row[1]))
+
+        return response_versions
 
     # 하트비트 Request 처리
     def Heartbeat(self, request, context):
         # Request
-        site_id = request.server.site_id
-        license_uuid = request.server.license_uuid
-        str_type = request.datas.str_type
         data = request.datas.data
+        # 나중에
+
 
         # Response
         response_status = None
         response_site_update_flag = None
         response_license_update_flag = None
-        response_versions = data_pb2.DataVersion()
-
+        response_versions = None
         # 결과값 설정
+
         if self.request_check(request.server) == False:
             response_status = heartbeat_pb2.ServerStatus.NOTFOUND
-            return heartbeat_pb2.HeartbeatResponse(status=response_status,
-                                                   site_update_flag=None,
-                                                   license_update_flag=None,
-                                                   versions=None)
         else:
             response_status = heartbeat_pb2.ServerStatus.REGISTER
 
-            query = f"SELECT * FROM site WHERE id = '{site_id}'"
-            result_dict = fetchone_query_to_dict(query)
-            if result_dict["update_server_status"] is False:
-                response_site_update_flag = heartbeat_pb2.DataUpdateFlag.NONE_FLAG
-            else:
-                response_site_update_flag = heartbeat_pb2.DataUpdateFlag.UPDATE
+            update_server_status = self._site(request.server.site_id)
+            response_site_update_flag = ( update_server_status is False and heartbeat_pb2.DataUpdateFlag.NONE_FLAG or heartbeat_pb2.DataUpdateFlag.UPDATE )
 
-            query = f"SELECT * FROM server_license WHERE id = '{license_uuid}' "
-            result_dict = fetchone_query_to_dict(query)
-            if result_dict["update_server_status"] is False:
-                response_license_update_flag = heartbeat_pb2.DataUpdateFlag.NONE_FLAG
-            else:
-                response_license_update_flag = heartbeat_pb2.DataUpdateFlag.UPDATE
-
-            # 결과값 - 데이터 타입, 버전 입력
-            query = f"SELECT * FROM rule_status"
-            result_dict_list = fetchall_query_to_dict(query)
-            if len(result_dict) > 0:
-                for result_dict in result_dict_list:
-                    version = data_pb2.DataVersion(type=result_dict["type"],
-                                                   version=result_dict["version"])
-                    response_versions.append(version)
-            else:
-                response_versions = None
+            update_licese_status = self._license(request.server.site_id)
+            response_license_update_flag = ( update_licese_status is False and heartbeat_pb2.DataUpdateFlag.NONE_FLAG or heartbeat_pb2.DataUpdateFlag.UPDATE )
+            response_versions = self._data_version()
 
             # 최종 결과값 도출 - 상태, 버전 데이터등..
-            response = heartbeat_pb2.HeartbeatResponse(status=response_status,
-                                                       site_update_flag=response_site_update_flag,
-                                                       license_update_flag=response_license_update_flag,
-                                                       versions=response_versions)
-
-            return response
+        return heartbeat_pb2.HeartbeatResponse(status=response_status,
+                                                   site_update_flag=response_site_update_flag,
+                                                   license_update_flag=response_license_update_flag,
+                                                   versions=response_versions)
