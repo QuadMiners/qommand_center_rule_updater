@@ -66,7 +66,7 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         return response
 
     def Status(self, request, context):
-
+        print("Get Status")
         return self._license_status(request.hardware_uuid, request.machine_id)
 
 

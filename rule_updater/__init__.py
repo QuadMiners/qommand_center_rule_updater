@@ -76,7 +76,7 @@ class ChannelMixin(object):
                     yield channel
 
                 else:
-                    channel = grpc.insecure_channel(target='{}:{}'.format(hostname, port),
+                    channel = grpc.insecure_channel(target='{}:{}'.format("10.0.2.15", "8090"),
                                                     options=[('grpc.lb_policy_name', 'pick_first'),
                                                              ('grpc.enable_retries', 0),
                                                              ('grpc.keepalive_timeout_ms', 10000)],
