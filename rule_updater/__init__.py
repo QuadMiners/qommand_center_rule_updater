@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 db.global_db_connect()
 class ChannelMixin():
 
-    server_type = 'update'
+    server_type = 'relay'
 
     #@contextlib.contextmanager
     #@lru_cache
@@ -57,7 +57,7 @@ class ChannelMixin():
                 if self.server_type == 'update':
                     hostname = 'localhost'
                 elif self.server_type == 'relay':
-                    hostname = get_env_str("GRPC_SERVER_IPV4")
+                    hostname = get_env_str("TARGET_SERVER_IVPV4")
                 else:
                     hostname = hostname
 
@@ -72,14 +72,23 @@ class ChannelMixin():
                                                            ('grpc.keepalive_timeout_ms', 10000)],
                                                   compression=grpc.Compression.Gzip)
 
+                    print("Y")
+                    print(hostname)
+                    print(port)
+
                     return channel
 
                 else:
-                    channel = grpc.insecure_channel("127.0.0.1:50051",
+                    #hostname = "192.168.10.56"
+                    #port = "9000"
+                    channel = grpc.insecure_channel('{}:{}'.format(hostname, port),
                                                     options=[('grpc.lb_policy_name', 'pick_first'),
                                                              ('grpc.enable_retries', 0),
                                                              ('grpc.keepalive_timeout_ms', 10000)],
                                                     compression=grpc.Compression.Gzip)
+                    print("N")
+                    print('{}:{}'.format(hostname, port))
+
                     return channel
 
             except DBException as k:

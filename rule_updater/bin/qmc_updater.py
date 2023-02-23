@@ -86,8 +86,8 @@ def main():
     # rule_update_service_pb2_grpc.add_DataUpdateServiceServicer_to_server(data_service, main_server)
     rule_update_service_pb2_grpc.add_LicenseServiceServicer_to_server(license_service, main_server)
     # rule_update_service_pb2_grpc.add_SiteServiceServicer_to_server(site_service, main_server)
-    main_server.add_insecure_port('[::]:50051')
-    # main_server.add_insecure_port(get_env_str('GRPC_SERVER_IPV4') + ":" + get_env_str('GRPC_SERVER_PORT'))
+
+    main_server.add_insecure_port(get_env_str('GRPC_SERVER_IPV4') + ":" + get_env_str('GRPC_SERVER_PORT'))
     main_server.start()
     main_server.wait_for_termination()
 
