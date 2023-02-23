@@ -21,6 +21,7 @@ class ChannelMixin(object):
     @contextlib.contextmanager
     @lru_cache
     def get_update_server_channel(self):
+        print("get_update_server_channel")
         hostname = None
         port = None
         sign_flag = None
@@ -38,6 +39,8 @@ class ChannelMixin(object):
                     SELECT hostname, port, sign_flag, sign_file 
                     from update_server_parent_config
                     """
+
+            print(self.server_type)
 
             with db.pmdatabase.qet_cursor() as pcursor:
                 pcursor.execute(query)

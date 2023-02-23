@@ -14,7 +14,7 @@ pmdatabase = None
 def global_db_connect(config=True, contents=True):
     global pmdatabase
 
-    from rule_updater import get_env_str
+    from rule_updater.env import get_env_str
     dbinfo = dict()
     dbinfo["name"] = get_env_str("POSTGRES_NAME")
     dbinfo["user"] = "quadminers"  # get_env_str("POSTGRES_USER")
@@ -29,7 +29,7 @@ def global_db_connect(config=True, contents=True):
 
 class DatabasePoolMixin(object):
 
-    from rule_updater import get_env_str
+    from rule_updater.env import get_env_str
     dbinfo = dict()
     dbinfo["name"] = get_env_str("POSTGRES_NAME")
     dbinfo["user"] = "quadminers"  # get_env_str("POSTGRES_USER")

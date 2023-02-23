@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 import logging
 import time
 
@@ -7,6 +10,7 @@ from concurrent import futures
 import grpc
 import daemon
 from quadlibrary.AppDaemon import Daemon
+
 
 from library.database import DatabasePoolMixin
 
