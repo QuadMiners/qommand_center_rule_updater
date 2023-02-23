@@ -67,8 +67,8 @@ class RuleUpdateApplication(Daemon, ChannelMixin, DatabasePoolMixin):
 
         while self.daemon_alive:
             try:
-                print(mode + ' server alive')
-                time.sleep(10)
+                #print(mode + ' server alive')
+                #time.sleep(10)
                 pass
                 #self.heartbeat()
             except Exception: #as hb:

@@ -1,5 +1,8 @@
 import os
 import sys
+
+import grpc
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 import logging
@@ -40,16 +43,24 @@ class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
             pass
 
     def Status(self):
-        channel = self.get_update_server_channel()
+        #channel = self.get_update_server_channel()
+        channel = grpc.insecure_channel("127.0.0.1:9000",
+                                        options=[('grpc.max_receive_message_length', 12000)])
+        print("Get Channel")
         stub = rule_update_service_pb2_grpc.LicenseServiceStub(channel)
+        print("Make Stub Channel")
         retrying_stub_methods(stub)
+        print("Channel ON")
 
         license_request_packet = license_pb2.LicenseRequest()
         license_request_packet.hardware_uuid = "0000-0000-0000-0000"
         license_request_packet.machine_id = "aaaa-bbbb-cccc-dddd"
-
+        print("send status")
         response_data = stub.Status(license_request_packet, timeout=10)
+        print("response status")
+
         license_status = response_data.status
+
 
         if license_status == license_pb2.LicenseStatus.APPROVE:
             license_data = response_data.license_data
