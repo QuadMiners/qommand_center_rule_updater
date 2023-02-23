@@ -7,8 +7,9 @@ import grpc
 
 import library.database as db
 from library.database import DBException
-from library.database.fquery import fetchone_query_to_dict
 from protocol.site import server_pb2
+
+from rule_updater.env import get_env_str
 
 logger = logging.getLogger(__name__)
 
@@ -33,24 +34,32 @@ class ChannelMixin(object):
                             WHERE keyword_group = 'update' and keyworrd = 'update_server'
                     """
         else:
-            query = """ SELECT * from update_server_parent_config """
+            query = """
+                    SELECT hostname, port, sign_flag, sign_file 
+                    from update_server_parent_config
+                    """
+
+            with db.pmdatabase.qet_cursor() as pcursor:
+                pcursor.execute(query)
+                row = pcursor.fetchone()
+                if row is None:
+                    logger.error("Can't Load update_server_parent_config")
+                    return None  # 등록된 IP 가 없음 update 서버일것..
+                else:
+                    hostname = row[0]
+                    port = row[1]
+                    sign_flag = row[2]
+                    sign_file_path = row[3]
 
             try:
-                result_dict = fetchone_query_to_dict(query)
-                if result_dict is 0:
-                    logger.error("Can't Load update_server_parent_config")
-                    yield None  # 등록된 IP 가 없음
+                if self.server == 'update':
+                    hostname = 'localhost'
+                elif self.server_type == 'relay':
+                    hostname = get_env_str("GRPC_SERVER_IPV4")
                 else:
-                    if self.server_type == 'relay':
-                        from rule_updater.env import get_env_str
-                        hostname = get_env_str("GRPC_SERVER_IPV4")
-                    else:
-                        hostname = result_dict["hostname"]
-                    port = result_dict["port"]
-                    sign_flag = result_dict["sign_flag"]
-                    sign_file_path = result_dict["sign_file"]
+                    hostname = hostname
 
-                if sign_flag is "Y":
+                if sign_flag == "Y":
                     with open(sign_file_path, "rb") as f:
                         cert = f.read()
                     credentials = grpc.ssl_channel_credentials(root_certificates=cert)
@@ -75,39 +84,40 @@ class ChannelMixin(object):
                 logger.error("Get Control Server Channel DB Error ".format(k))
 
 
-class ResponseRequestMixin(ChannelMixin):
+class ResponseRequestMixin():
 
     @lru_cache
     def get_request_server(self):
+        query = "SELECT site_id, license_uuid FROM license " \
+                "JOIN server_info " \
+                "ON license.server_info_id = server_info.id"
+
         request_server = server_pb2.RequestServer()
 
-        query = "SELECT * FROM site"
-        result_dict = fetchone_query_to_dict(query)
-        request_server.site_id = result_dict["id"]
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.excute(query)
+            row = pcursor.fetchone()
+            if pcursor.rowcount > 0:
+                request_server.site_id = row[0]
+                request_server.license_uuid = row[1]
 
-        """
-            자신의 라이센스 아이디 어떻게 구하지..?
-            update_server_info_model에 uuid ?
-        """
-        request_server.license_uuid
         return request_server
 
 class RequestCheckMixin():
     def request_check(self, request_server):
-        """
-        RequestServer : proto
-        """
-        site_id = request_server.site_id
-        license_uuid = request_server.license_uuid
 
         query = """
-                SELECT * FROM server_info WHERE site = '{site_id}' AND license_uuid = '{license_uuid}'
-                """
-        result_dict = fetchone_query_to_dict(query)
-        if result_dict is None or result_dict <= 0:
-            return False # 허용 안된 서버
-        else:
-            return True # 허용된 서버
+                SELECT site, license_uuid FROM server_info 
+                WHERE site = '{site_id}' 
+                AND license_uuid = '{license_uuid}'
+                """.format(**dict(site_id=request_server.site_id,
+                                  license_uuid=request_server.license_uuid))
 
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.execute(query)
+            if pcursor.rowcount > 0:
+                return True
+            else:
+                return False
 
 

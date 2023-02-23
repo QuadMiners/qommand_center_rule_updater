@@ -1,59 +1,72 @@
-from library.database.fquery import fetchall_query_to_dict, fetchall_query, fetchone_query_to_dict
+from library.rpc.convertor import protobuf_to_dict
 from protocol import rule_update_service_pb2_grpc
 from protocol.license import license_pb2
 from rule_updater import RequestCheckMixin
 
+import library.database as db
 
 class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseServiceServicer):
+
+    def _register(self, license_regist_info):
+
+        server_info_id = None
+        approve_type = None
+
+        query = """
+                SELECT id FROM server_info \
+                WHERE server_info.hardware_uuid = '{hardware_uuid}' AND server_info.machine_id = '{machine_id}'
+                """.format(**dict(hardware_uuid=license_regist_info['hardware_uuid'],
+                                  machine_id=license_regist_info['machine_id']))
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.execute(query)
+            row = pcursor.fetchone()
+            if row is not None:
+                #이미 정보가 있을때
+                approve_type = license_pb2.LicenseStatus.DUPLICATE
+            else:
+                # 새로운 하드웨어, 머신 아이디로 라이센스 요청
+                approve_type = license_pb2.LicenseStatus.WAITING
+
+        return license_pb2.LicenseResponse(status=approve_type,
+                                           license_data=None)
+
     def Register(self, request, context):
-        """
-        request.type == 1 요청한 데이타 타입 확인 SNORT
-        request.license_uuid 알맞은 접속자 확인
-        request.version 다운로드 요청한 버전 데이터 가져오기.
-        """
-        reg_user_name = request.reg_user_name
-        reg_user_tel = request.reg_user_tel
-        server_type = request.server_type
-        hardware_uuid = request.hardware_uuid
-        machine_id = request.machine_id
 
-        query = f"SELECT * FROM license_info WHERE hardware_uuid = '{hardware_uuid}' AND machine_id = '{machine_id}'"
-        fetchall_query_to_dict(query)
+        response = self._register(protobuf_to_dict(request))
 
-        status = license_pb2.LicenseStatus.APPROVE
-        response = license_pb2.LicenseResponse(status=status,
-                                               license_data="")
+        return response
+
+    def _license_status(self, hardware_uuid, machine_id):
+
+        approve = None
+        license_data = None
+
+        query = """ SELECT approve_type, raw FROM site_license_status_approve 
+                            JOIN server_license
+                            ON site_license_satatus_approve.server_info_id = server_license.server_info_id
+                            WHERE server_info_id = (SELECT id 
+                                                    FROM server_info 
+                                                    WHERE hardware_key = '{hardware_uuid}' 
+                                                    AND machine_id = '{machine_id}' )
+                        """.format(**dict(hardware_uuid=hardware_uuid,
+                                          machine_id=machine_id))
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.execute(query)
+            row = pcursor.fetchone()
+            if row > 0:
+                approve = row[0]
+                license_data = row[1]
+
+        if approve == "confirm":
+            response = license_pb2.LicenseStatus(status=license_pb2.LicenseStatus.APPROVED,
+                                                 license_data=license_data)
+        else:
+            response = None
 
         return response
 
     def Status(self, request, context):
 
-        query = """ SELECT * FROM site_license_status_approve 
-                    WHERE server_info_id = (SELECT id 
-                                        FROM server_info 
-                                        WHERE hardware_key = '{hardware_uuid}' 
-                                        AND machine_id = '{machine_id}' )
-                """.format(**dict(hardware_uuid=request.hardware_uuid,
-                                  machine_id =request.machine_id))
-        result_dict = fetchone_query_to_dict(query)
+        return self._license_status(request.hardware_uuid, request.machine_id)
 
-        if result_dict['approve_type'] == "confirm":
-            status = license_pb2.LicenseStatus.APPROVE
-            response = license_pb2.LicenseStatus(status=status,
-                                                 license_data="무엇을 보내야하나?")
-        else:
-            return None
 
-        """
-            Site 정보 모두 업데이트 내려줬다고 체크. server_info_id 에서 join하여 검색
-        """
-        query = f"UPDATE black.server_license " \
-                f"SET update_server_status = True " \
-                f"WHERE server_info_id = (" \
-                    f"SELECT id FROM server_info " \
-                    f"WHERE hardware_key = '{hardware_uuid}' AND machine_id = '{machine_id}'" \
-                f")"
-
-        fetchall_query(query)
-
-        return response

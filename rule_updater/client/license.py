@@ -1,17 +1,16 @@
 import logging
 import time
 
-from library.database.fquery import fetchone_query_to_dict
 from library.rpc.retry import retrying_stub_methods
 from protocol import rule_update_service_pb2_grpc
 from protocol.license import license_pb2
 from protocol.site import site_pb2
-from rule_updater import ResponseRequestMixin
+from rule_updater import ResponseRequestMixin, ChannelMixin
 
 logger = logging.getLogger(__name__)
 
 
-class LicenseClientMixin(ResponseRequestMixin):
+class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
 
     def Register(self):
         channel = self.get_update_server_channel()
@@ -57,9 +56,26 @@ class LicenseClientMixin(ResponseRequestMixin):
             pass
 
 
+def main():
+    LicenseClientMixin().Status()
+    pass
+
+
+if __name__ == '__main__':
+    main()
 
 
 
+"""
+    def _data_version(self):
+        query = "SELECT type, version FROM data_version"
+        response_versions = list()
 
+        with db.pmdatabase.get_cursor() as pcursor:
+            pcursor.execute(query)
+            rows = pcursor.fetchall()
+            for row in rows:
+                response_versions.append(data_pb2.DataVersion(type=row[0], version=row[1]))
 
-
+        return response_versions
+"""

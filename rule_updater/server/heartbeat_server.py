@@ -19,7 +19,7 @@ class QmcHeartbeatService(RequestCheckMixin, rule_update_service_pb2_grpc.Heartb
         return update_server_status
 
     def _data_version(self):
-        query = "SELECT teyp, version FROM data_version"
+        query = "SELECT type, version FROM data_version"
         response_versions = list()
 
         with db.pmdatabase.get_cursor() as pcursor:
@@ -31,7 +31,7 @@ class QmcHeartbeatService(RequestCheckMixin, rule_update_service_pb2_grpc.Heartb
         return response_versions
 
     def _data_license(self):
-        query = "SELECT teyp, version FROM site_license"
+        query = "SELECT type, version FROM site_license"
         response_versions = data_pb2.DataVersion()
 
         with db.pmdatabase.get_cursor() as pcursor:

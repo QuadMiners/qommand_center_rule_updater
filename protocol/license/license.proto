@@ -2,7 +2,8 @@ syntax = "proto3";
 
 enum LicenseStatus {
   APPROVE = 0;
-
+  WAITING = 1;
+  DUPLICATE = 2;
 }
 
 

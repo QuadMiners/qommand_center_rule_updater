@@ -3,10 +3,10 @@ import time
 
 import grpc
 
-from library.database.fquery import fetchall_query_to_dict
+
 from library.rpc.retry import retrying_stub_methods, RetriesExceeded
 from protocol import rule_update_service_pb2_grpc
-from protocol.data.data_pb2 import DataType
+
 from protocol.heartbeat import heartbeat_pb2
 from protocol.heartbeat.heartbeat_pb2 import StringData, HeartbeatRequest, ServerStatus, DataUpdateFlag
 from protocol.site import server_pb2

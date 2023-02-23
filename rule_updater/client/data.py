@@ -2,7 +2,6 @@ import hashlib
 import logging
 import time
 
-from library.database.fquery import fetchall_query_to_dict, fetchone_query_to_dict
 from library.rpc.retry import retrying_stub_methods
 from protocol import rule_update_service_pb2_grpc
 
