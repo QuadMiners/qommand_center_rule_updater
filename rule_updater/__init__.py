@@ -13,15 +13,14 @@ from rule_updater.env import get_env_str
 
 logger = logging.getLogger(__name__)
 
-
-class ChannelMixin(object):
+db.global_db_connect()
+class ChannelMixin():
 
     server_type = 'update'
 
-    @contextlib.contextmanager
-    @lru_cache
+    #@contextlib.contextmanager
+    #@lru_cache
     def get_update_server_channel(self):
-        print("get_update_server_channel")
         hostname = None
         port = None
         sign_flag = None
@@ -37,12 +36,12 @@ class ChannelMixin(object):
         else:
             query = """
                     SELECT hostname, port, sign_flag, sign_file 
-                    from update_server_parent_config
+                    FROM black.update_server_parent_config
                     """
 
-            print(self.server_type)
+            print(query)
 
-            with db.pmdatabase.qet_cursor() as pcursor:
+            with db.pmdatabase.get_cursor() as pcursor:
                 pcursor.execute(query)
                 row = pcursor.fetchone()
                 if row is None:
@@ -55,7 +54,7 @@ class ChannelMixin(object):
                     sign_file_path = row[3]
 
             try:
-                if self.server == 'update':
+                if self.server_type == 'update':
                     hostname = 'localhost'
                 elif self.server_type == 'relay':
                     hostname = get_env_str("GRPC_SERVER_IPV4")
@@ -73,15 +72,15 @@ class ChannelMixin(object):
                                                            ('grpc.keepalive_timeout_ms', 10000)],
                                                   compression=grpc.Compression.Gzip)
 
-                    yield channel
+                    return channel
 
                 else:
-                    channel = grpc.insecure_channel(target='{}:{}'.format("10.0.2.15", "8090"),
+                    channel = grpc.insecure_channel("127.0.0.1:50051",
                                                     options=[('grpc.lb_policy_name', 'pick_first'),
                                                              ('grpc.enable_retries', 0),
                                                              ('grpc.keepalive_timeout_ms', 10000)],
                                                     compression=grpc.Compression.Gzip)
-                    yield channel
+                    return channel
 
             except DBException as k:
                 logger.error("Get Control Server Channel DB Error ".format(k))

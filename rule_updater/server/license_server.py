@@ -41,6 +41,9 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         approve = None
         license_data = None
 
+        print(hardware_uuid)
+        print(machine_id)
+
         query = """ SELECT approve_type, raw FROM site_license_status_approve 
                             JOIN server_license
                             ON site_license_satatus_approve.server_info_id = server_license.server_info_id
@@ -66,7 +69,6 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         return response
 
     def Status(self, request, context):
-        print("Get Status")
         return self._license_status(request.hardware_uuid, request.machine_id)
 
 

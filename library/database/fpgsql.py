@@ -9,7 +9,7 @@ import psycopg2
 from contextlib import contextmanager
 from psycopg2.pool import SimpleConnectionPool
 from quadlibrary.AppDefine import EUseDatabase
-from .fdatabase import DBInterface, DBException
+from . fdatabase import DBInterface, DBException
 
 
 logger = logging.getLogger(__name__)
@@ -116,11 +116,11 @@ class FPgsqlPool():
     def connect(self):
         try:
             self._dbpool = psycopg2.pool.ThreadedConnectionPool(self.pool_cnt, 20,
-                                                                database=self._dbinfo['name'],
-                                                                user=self._dbinfo['user'],
-                                                                password=self._dbinfo['passwd'],
-                                                                host=self._dbinfo['host'],
-                                                                port=self._dbinfo['port'])
+                                                                database=self._dbinfo.name,
+                                                                user=self._dbinfo.user,
+                                                                password=self._dbinfo.passwd,
+                                                                host=self._dbinfo.host,
+                                                                port=self._dbinfo.port)
         except psycopg2.DatabaseError as e:
             logger.error("Error ) PostgreSQL Connection Code:{0} Msg:{1}".format(e.pgcode, e))
             raise DBException(e.pgcode, e)

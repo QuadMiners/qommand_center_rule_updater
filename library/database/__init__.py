@@ -11,17 +11,28 @@ logger = logging.getLogger(__name__)
 
 pmdatabase = None
 
+class DBINFO():
+    name = None
+    database = None
+    user = None
+    passwd = None
+    host = None
+    port = None
+    def __init__(self):
+        from rule_updater.env import get_env_str, get_env_int
+        self.database = get_env_str("POSTGRES_NAME")
+        self.name = get_env_str("POSTGRES_NAME")
+        self.user = get_env_str("POSTGRES_USER")
+        self.passwd = get_env_str("POSTGRES_PASSWORD")
+        self.host = get_env_str("POSTGRES_HOST")
+        self.port = get_env_str("POSTGRES_PORT")
+        self.schema = get_env_str("POSTGRES_SCHEMA")
+
+
 def global_db_connect(config=True, contents=True):
     global pmdatabase
 
-    from rule_updater.env import get_env_str
-    dbinfo = dict()
-    dbinfo["name"] = get_env_str("POSTGRES_NAME")
-    dbinfo["user"] = "quadminers"  # get_env_str("POSTGRES_USER")
-    dbinfo["passwd"] = "quadminers"  # get_env_str("POSTGRES_PASSWORD")
-    dbinfo["host"] = "127.0.0.1"  # get_env_str("POSTGRES_HOST")
-    dbinfo["port"] = "10090"  # get_env_int("POSTGRES_PORT")
-    dbinfo["schema"] = "black"  # get_env_str("POSTGRES_SCHEMA")
+    dbinfo = DBINFO()
 
     if config:
         pmdatabase = FPgsqlPool(dbinfo)
@@ -29,14 +40,7 @@ def global_db_connect(config=True, contents=True):
 
 class DatabasePoolMixin(object):
 
-    from rule_updater.env import get_env_str
-    dbinfo = dict()
-    dbinfo["name"] = get_env_str("POSTGRES_NAME")
-    dbinfo["user"] = "quadminers"  # get_env_str("POSTGRES_USER")
-    dbinfo["passwd"] = "quadminers"  # get_env_str("POSTGRES_PASSWORD")
-    dbinfo["host"] = "127.0.0.1"  # get_env_str("POSTGRES_HOST")
-    dbinfo["port"] = "10090"  # get_env_int("POSTGRES_PORT")
-    dbinfo["schema"] = "black"  # get_env_str("POSTGRES_SCHEMA")
+    dbinfo = DBINFO()
 
     def dbconnect(self, config=True, pool_cnt=2):
         global pmdatabase

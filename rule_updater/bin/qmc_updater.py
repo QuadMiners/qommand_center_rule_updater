@@ -35,24 +35,18 @@ class RuleUpdateApplication(Daemon, ChannelMixin, DatabasePoolMixin):
         #data_service = QmcDataService()
 
         main_server = grpc.server(futures.ThreadPoolExecutor(max_workers=100),
-                                  options=[('grpc.max_receive_message_length', get_env_str('MAX_MESSAGE_LENGTH'))])
+                                  options=[('grpc.max_receive_message_length', 2147483647)])
 
         #rule_update_service_pb2_grpc.add_HeartbeatServiceServicer_to_server(hb_service, main_server)
         #rule_update_service_pb2_grpc.add_DataUpdateServiceServicer_to_server(data_service, main_server)
         rule_update_service_pb2_grpc.add_LicenseServiceServicer_to_server(license_service, main_server)
         #rule_update_service_pb2_grpc.add_SiteServiceServicer_to_server(site_service, main_server)
-        main_server.add_insecure_port(get_env_str('GRPC_SERVER_IPV4') + ":" + get_env_str('GRPC_SERVER_PORT'))
+        main_server.add_insecure_port('[::]:50051')
+        #main_server.add_insecure_port(get_env_str('GRPC_SERVER_IPV4') + ":" + get_env_str('GRPC_SERVER_PORT'))
         main_server.start()
 
     def run(self, *args, **kwargs):
 
-        """
-            nbb 에서 동작할때는 client 만
-            relay 서버일때는 Server  /  Client 동작
-            update 서버일때는 Server 만
-
-            h/w 정보 수집 내용도 포함해야됨.
-        """
         logger.info("--- Rule Update Application Start---")
         self.dbconnect()
 
@@ -78,10 +72,24 @@ class RuleUpdateApplication(Daemon, ChannelMixin, DatabasePoolMixin):
 
 
 def main():
-    RuleUpdateApplication(12345).run()
-    #server_daemon = RuleUpdateApplication()
-    #server_daemon.run()
-    pass
+    #RuleUpdateApplication(12345).run()
+
+    # site_service = QmcSiteService()
+    license_service = QmcLicenseService()
+    # hb_service = QmcHeartbeatService()
+    # data_service = QmcDataService()
+
+    main_server = grpc.server(futures.ThreadPoolExecutor(max_workers=100),
+                              options=[('grpc.max_receive_message_length', 2147483647)])
+
+    # rule_update_service_pb2_grpc.add_HeartbeatServiceServicer_to_server(hb_service, main_server)
+    # rule_update_service_pb2_grpc.add_DataUpdateServiceServicer_to_server(data_service, main_server)
+    rule_update_service_pb2_grpc.add_LicenseServiceServicer_to_server(license_service, main_server)
+    # rule_update_service_pb2_grpc.add_SiteServiceServicer_to_server(site_service, main_server)
+    main_server.add_insecure_port('[::]:50051')
+    # main_server.add_insecure_port(get_env_str('GRPC_SERVER_IPV4') + ":" + get_env_str('GRPC_SERVER_PORT'))
+    main_server.start()
+    main_server.wait_for_termination()
 
 
 if __name__ == '__main__':

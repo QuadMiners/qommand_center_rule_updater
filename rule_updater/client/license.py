@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
 
+    def __init__(self):
+        pass
+
     def Register(self):
         channel = self.get_update_server_channel()
         stub = rule_update_service_pb2_grpc.LicenseServiceStub(channel)
@@ -43,10 +46,12 @@ class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
             pass
 
     def Status(self):
-        #channel = self.get_update_server_channel()
-        channel = grpc.insecure_channel("127.0.0.1:9000",
-                                        options=[('grpc.max_receive_message_length', 12000)])
-        print("Get Channel")
+        channel = self.get_update_server_channel()
+        print(channel)
+        #channel = grpc.insecure_channel("127.0.0.1:50051", options=[('grpc.max_receive_message_length', 2147483647)])
+        stub = rule_update_service_pb2_grpc.LicenseServiceStub(channel)
+
+
         stub = rule_update_service_pb2_grpc.LicenseServiceStub(channel)
         print("Make Stub Channel")
         retrying_stub_methods(stub)
@@ -64,9 +69,9 @@ class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
 
         if license_status == license_pb2.LicenseStatus.APPROVE:
             license_data = response_data.license_data
-            """
-                license_data 처리.. 어디에 넣어야 하는가?
-            """
+            
+               # license_data 처리.. 어디에 넣어야 하는가?
+            
         else:
             pass
 
