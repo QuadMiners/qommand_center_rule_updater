@@ -17,6 +17,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                 FROM site 
                 WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
+        query = "SELECT * FROM site"
         print("200")
         with db.pmdatabase.get_cursor(query) as pcursor:
             print("2000")
