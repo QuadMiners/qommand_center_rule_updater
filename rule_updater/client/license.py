@@ -57,7 +57,7 @@ class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
 
         license_status = response_data.status
 
-        if license_status == license_pb2.APPROVE:
+        if license_status == license_pb2.LicenseResponse.APPROVE:
             license_data = response_data.license_data
         else:
             pass
