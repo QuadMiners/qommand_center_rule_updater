@@ -44,15 +44,17 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         print(hardware_uuid)
         print(machine_id)
 
-        query = """ SELECT approve_type, raw FROM black.site_license_approve 
-                            JOIN server_license
-                            ON site_license_approve.server_info_id = server_license.server_info_id
-                            WHERE site_license_approve.server_info_id = (SELECT id 
-                                                    FROM server_info 
-                                                    WHERE hardware_key = '{hardware_uuid}' 
-                                                    AND machine_id = '{machine_id}' )
-                        """.format(**dict(hardware_uuid=hardware_uuid,
+        query = """ 
+                SELECT approve_type, raw FROM black.site_license_approve 
+                JOIN server_license
+                ON site_license_approve.server_info_id = server_license.server_info_id
+                WHERE site_license_approve.server_info_id = (SELECT id 
+                                                            FROM server_info 
+                                                            WHERE hardware_key = '{hardware_uuid}' 
+                                                            AND machine_id = '{machine_id}' )
+                """.format(**dict(hardware_uuid=hardware_uuid,
                                           machine_id=machine_id))
+        print("0")
         with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
             row = pcursor.fetchone()
@@ -63,7 +65,7 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         print("1")
         print(approve, license_data)
         print("2")
-        
+
         if approve == "confirm":
             response = license_pb2.LicenseStatus(status=license_pb2.LicenseStatus.APPROVED,
                                                  license_data=license_data)
