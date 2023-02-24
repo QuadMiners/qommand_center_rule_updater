@@ -19,8 +19,9 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                 """.format(**dict(site_id=site_id))
         print("200")
         with db.pmdatabase.get_cursor(query) as pcursor:
-            pcursor.execute(query)
             print("2000")
+            pcursor.execute(query)
+            print("2001")
             row = pcursor.fetchone()
             print(row)
             if pcursor.rowcount > 0:
