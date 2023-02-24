@@ -57,11 +57,14 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
     def GetSite(self, request, context):
 
         print(request)
+        print("1")
         response = site_pb2.SiteResponse()
         response.site = self._get_site(request.server.site_id)
         print(response.site)
+        print("2")
         response.servers = self._get_servers(request.server.site_id, request.server.license_uuid)
         print(response.servers)
+        print("3")
 
         return response
 
