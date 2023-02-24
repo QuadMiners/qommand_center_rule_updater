@@ -14,7 +14,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
         query = """
                 SELECT name, address, tel, 'desc', engineer, sales 
                 FROM site 
-                WHERE site_id = '{site_id}'
+                WHERE id = '{site_id}'
                 """.format(**dict(site_id=site_id))
         with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
