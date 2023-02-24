@@ -10,7 +10,7 @@ from rule_updater import RequestCheckMixin
 
 class QmcHeartbeatService(RequestCheckMixin, rule_update_service_pb2_grpc.HeartbeatServiceServicer):
     def _site(self, site_id):
-        query = f"SELECT update_server_status FROM site WHERE id = '{site_id}'"
+        query = "SELECT update_server_status FROM site WHERE id = '{site_id}'"
         update_server_status = False
         with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
