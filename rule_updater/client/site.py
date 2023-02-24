@@ -21,32 +21,38 @@ class SiteClientMixin(ChannelMixin, ResponseRequestMixin):
 
     def _update_site(self, site_info):
         site_dict = protobuf_to_dict(site_info)
-        query = """ 
+        query = """
                 UPDATE black.site
                 SET name = '{name}',
                     address = '{address}',
                     tel = '{tel}', 
-                    desc = '{desc}'
-                    engineer = '{engineer}'
+                    "desc" = '{desc}', 
+                    engineer = '{engineer}', 
                     sales = '{sales}' 
-                WHERE name = {name}
+                WHERE name = '{name}'
                 """.format(**site_dict)
         db.pmdatabase.execute(query)
 
     def _update_server(self, servers_info):
         for server in servers_info:
             server_dict = protobuf_to_dict(server)
-            query =""" UPDATE black.server_info
-                       SET server_id = '{server_id}',
-                            name = '{server_name}',
-                            type = '{server_type}', 
-                            version = '{server_version}'
-                            engineer = '{engineer}'
-                            hostname = '{server_host_name}' 
-                            ipaddr = '{server_ipaddr}'
-                            license_data = '{server_license_data}' 
-                        WHERE name = {name}
+            query = """ 
+                    UPDATE black.server_info
+                    SET id = '{id}',
+                        name = '{name}',
+                        type = '{server_type}', 
+                        version = '{version}', 
+                        hostname = '{host_name}', 
+                        ipaddr = '{ipaddr}' 
+                    WHERE id = '{id}'
                     """.format(**server_dict)
+            db.pmdatabase.execute(query)
+
+            query="""
+                  UPDATE black.license 
+                  SET info = '{license_data}' 
+                  WHERE server_info_id = '{id}'
+                  """.format(**server_dict)
             db.pmdatabase.execute(query)
 
     def GetSite(self):
