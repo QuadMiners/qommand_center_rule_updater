@@ -13,7 +13,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
         site_info = None
         query = """
                 SELECT name, address, tel, 'desc', engineer, sales 
-                FROM site 
+                FROM black.site 
                 WHERE id = '{site_id}'
                 """.format(**dict(site_id=site_id))
         with db.pmdatabase.get_cursor() as pcursor:
@@ -27,16 +27,18 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                                           engineer=row[4],
                                           sales=row[5])
 
-        print(site_info)
         return site_info
 
     def _get_servers(self, site_id, license_uuid):
 
         servers_info = None
 
+        #info license_data
         query = """
-                SELECT id, name, server_type, version, host_name, ipaddr, license_data
-                FROM server_info 
+                SELECT id, name, type, version, host_name, ipaddr, info
+                FROM black.server_info 
+                JOIN black.license 
+                ON black.license.server_info_id = black.server_info.id
                 WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
         with db.pmdatabase.get_cursor() as pcursor:
@@ -58,15 +60,13 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
     # 사이트에 대한 정보를 전부 가져온다. Site , Server 정보 모두
     def GetSite(self, request, context):
 
-        print(request)
-        print("1")
+        print("request", request)
 
         site_info = self._get_site(request.server.site_id)
         print(site_info)
-        print("2")
+
         servers_info = self._get_servers(request.server.site_id, request.server.license_uuid)
         print(servers_info)
-        print("3")
 
         return site_pb2.SiteResponse(site = site_info, servers = servers_info)
 
