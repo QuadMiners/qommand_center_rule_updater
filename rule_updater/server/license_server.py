@@ -46,7 +46,7 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
 
         query = """ SELECT approve_type, raw FROM black.site_license_approve 
                             JOIN server_license
-                            ON site_license_satatus_approve.server_info_id = server_license.server_info_id
+                            ON site_license_approve.server_info_id = server_license.server_info_id
                             WHERE server_info_id = (SELECT id 
                                                     FROM server_info 
                                                     WHERE hardware_key = '{hardware_uuid}' 
