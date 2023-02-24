@@ -68,7 +68,7 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
 
         if approve == "confirm":
             response = license_pb2.LicenseResponse(status=license_pb2.LicenseStatus.APPROVE,
-                                                 license_data=license_data)
+                                                   license_data=license_data)
         else:
             response = None
 

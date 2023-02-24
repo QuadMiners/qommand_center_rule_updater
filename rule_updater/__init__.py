@@ -72,9 +72,7 @@ class ChannelMixin():
                                                            ('grpc.keepalive_timeout_ms', 10000)],
                                                   compression=grpc.Compression.Gzip)
 
-                    print("Y")
-                    print(hostname)
-                    print(port)
+                    print('{}:{}'.format(hostname, port), "인증서 통신 모드")
 
                     return channel
 
@@ -86,8 +84,8 @@ class ChannelMixin():
                                                              ('grpc.enable_retries', 0),
                                                              ('grpc.keepalive_timeout_ms', 10000)],
                                                     compression=grpc.Compression.Gzip)
-                    print("N")
-                    print('{}:{}'.format(hostname, port))
+
+                    print('{}:{}'.format(hostname, port), "비인증서 통신 모드")
 
                     return channel
 

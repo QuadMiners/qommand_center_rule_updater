@@ -55,7 +55,8 @@ class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
         license_request_packet.machine_id = "aaaa-bbbb-cccc-dddd"
         response_data = stub.Status(license_request_packet, timeout=10)
 
-        print(response_data)
+        print(response_data.status)
+        print(response_data.license_data)
 
         license_status = response_data.status
 
