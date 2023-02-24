@@ -6,8 +6,11 @@ message Site{
   string address = 2;
   string tel = 3;
   string desc = 4;
-  string engineer = 5;
-  string sales = 6;
+  string partner_info = 5;
+  string distributor = 6;
+  string engineer = 7;
+  string sales = 8;
+  string notification_settings = 9;
 }
 
 message SiteRequest {

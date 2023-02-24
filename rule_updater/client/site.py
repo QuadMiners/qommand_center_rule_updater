@@ -36,20 +36,27 @@ class SiteClientMixin(ChannelMixin, ResponseRequestMixin):
     def _update_server(self, servers_info):
         for server in servers_info:
             server_dict = protobuf_to_dict(server)
-            query = """ 
-                    UPDATE black.server_info
+
+            query = """
+                    INSERT INTO black.server_info 
+                    (id, name, type, version, hostname, ipaddr) 
+                    VALUES('{id}', '{name}', '{server_type}', '{version}', '{host_name}', '{ipaddr}') 
+                    ON CONFLICT (id) DO UPDATE 
                     SET id = '{id}',
                         name = '{name}',
                         type = '{server_type}', 
                         version = '{version}', 
                         hostname = '{host_name}', 
                         ipaddr = '{ipaddr}' 
-                    WHERE id = '{id}'
+                    WHERE black.server_info.id = '{id}'
                     """.format(**server_dict)
             db.pmdatabase.execute(query)
 
             query="""
-                  UPDATE black.license 
+                  INSERT INTO black.license 
+                  (info) 
+                  VALUES ('license_data')
+                  ON CONFLICT (server_info_id) DO UPDATE
                   SET info = '{license_data}' 
                   WHERE server_info_id = '{id}'
                   """.format(**server_dict)
@@ -90,7 +97,7 @@ class SiteClientMixin(ChannelMixin, ResponseRequestMixin):
         """
         request_packet = site_pb2.ServerRequest()
         request_packet.server = self.get_request_server()
-        request_packet.server_id = None
+        request_packet.server_id = self.get_server_id()
         response_data = stub.GetSite(request_packet, timeout=10)
         server = response_data.server
 

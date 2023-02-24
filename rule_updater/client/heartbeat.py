@@ -19,7 +19,7 @@ from rule_updater.env import get_env_str
 logger = logging.getLogger(__name__)
 
 
-class HeartBeatMixin(DataClientMixin,ResponseRequestMixin):
+class HeartBeatMixin(DataClientMixin,ResponseRequestMixin,SiteClientMixin,LicenseClientMixin):
 
     def get_data(self):
         datas = list()
@@ -51,13 +51,13 @@ class HeartBeatMixin(DataClientMixin,ResponseRequestMixin):
                     """
                         site api  call
                     """
-                    SiteClientMixin().GetSite()
+                    self.GetSite()
 
                 if response.license_update_flag == DataUpdateFlag.UPDATE:
                     """
                         license api call
                     """
-                    LicenseClientMixin().Status()
+                    self.Status()
 
                 """
                     check version
