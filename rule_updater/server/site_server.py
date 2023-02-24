@@ -35,7 +35,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
 
         #info license_data
         query = """
-                SELECT id, name, type, version, host_name, ipaddr, info
+                SELECT server_info.id, name, type, version, hostname, ipaddr, info
                 FROM black.server_info 
                 JOIN black.license 
                 ON black.license.server_info_id = black.server_info.id
@@ -44,6 +44,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
         with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
             rows = pcursor.fetchall()
+            print(rows)
             if pcursor.rowcount > 0:
                 for row in rows:
                     server = server_pb2.Server(id=row[0],
@@ -55,6 +56,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                                                license_data=[row[6]])
                     servers_info.append(server)
 
+        print(servers_info)
         return servers_info
 
     # 사이트에 대한 정보를 전부 가져온다. Site , Server 정보 모두
