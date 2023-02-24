@@ -64,6 +64,9 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
         response.site = self._get_site(site_id)
         response.servers = self._get_servers(site_id)
 
+        print(response.site)
+        print(response.servers)
+
         return response
 
     # 서버정보 1대 가져온다

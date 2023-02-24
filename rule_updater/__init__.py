@@ -97,7 +97,7 @@ class ResponseRequestMixin():
 
     @lru_cache
     def get_request_server(self):
-        query = "SELECT site_id, license_uuid FROM license " \
+        query = "SELECT site_id, key FROM black.license " \
                 "JOIN server_info " \
                 "ON license.server_info_id = server_info.id"
 

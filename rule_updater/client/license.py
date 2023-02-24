@@ -1,17 +1,12 @@
 import os
 import sys
-
-import grpc
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 import logging
-import time
 
 from library.rpc.retry import retrying_stub_methods
 from protocol import rule_update_service_pb2_grpc
 from protocol.license import license_pb2
-from protocol.site import site_pb2
 from rule_updater import ResponseRequestMixin, ChannelMixin
 
 logger = logging.getLogger(__name__)
@@ -62,10 +57,14 @@ class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
 
         if license_status == license_pb2.LicenseStatus.APPROVE:
             license_data = response_data.license_data
+            """
+                받아오는것 정상 확인 되었다. license data 모델 테이블 수정되면 입력하면 됨.
+            """
         else:
             pass
 
-
+"""
+Test Code
 def main():
     a = LicenseClientMixin()
     a.Status()
@@ -73,7 +72,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-
+"""
 
 
 """
