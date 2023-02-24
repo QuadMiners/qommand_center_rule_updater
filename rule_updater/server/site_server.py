@@ -11,12 +11,13 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
     def _get_site(self, site_id):
 
         site_info = None
-
+        print("100")
         query = """
                 SELECT name, address, tel, desc, engineer, sales 
                 FROM site 
                 WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
+        print("200")
         with db.pmdatabase.get_cursor(query) as pcursor:
             pcursor.execute(query)
             row = pcursor.fetchone()
@@ -27,7 +28,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                                         desc=row[3],
                                         engineer=row[4],
                                         sales=row[5])
-
+        print("300")
         return site_info
 
     def _get_servers(self, site_id, license_uuid):
