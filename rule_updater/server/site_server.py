@@ -11,28 +11,23 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
     def _get_site(self, site_id):
 
         site_info = None
-        print("100")
         query = """
                 SELECT name, address, tel, desc, engineer, sales 
                 FROM site 
                 WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
-        query = "SELECT * FROM site"
-        print("200")
-        with db.pmdatabase.get_cursor(query) as pcursor:
-            print("2000")
+        with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
-            print("2001")
             row = pcursor.fetchone()
-            print(row)
             if pcursor.rowcount > 0:
                 site_info = site_pb2.Site(name=row[0],
-                                        address=row[1],
-                                        tel=row[2],
-                                        desc=row[3],
-                                        engineer=row[4],
-                                        sales=row[5])
-        print("300")
+                                          address=row[1],
+                                          tel=row[2],
+                                          desc=row[3],
+                                          engineer=row[4],
+                                          sales=row[5])
+
+        print(site_info)
         return site_info
 
     def _get_servers(self, site_id, license_uuid):
@@ -44,7 +39,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                 FROM server_info 
                 WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
-        with db.pmdatabase.get_cursor(query) as pcursor:
+        with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
             rows = pcursor.fetchall()
             if pcursor.rowcount > 0:
