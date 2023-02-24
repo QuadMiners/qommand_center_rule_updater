@@ -13,9 +13,9 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
         site = None
 
         query = """
-                SELECT type, address, tel, desc, engineer, sales \
-                FROM site \
-                WHERE site_id = '{site_id}'"
+                SELECT type, address, tel, desc, engineer, sales 
+                FROM site 
+                WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
         with db.pmdatabase.get_cursor(query) as pcursor:
             pcursor.execute(query)
@@ -58,15 +58,15 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
 
         print(request)
         print("1")
-        response = site_pb2.SiteResponse()
-        response.site = self._get_site(request.server.site_id)
-        print(response.site)
+
+        site_info = self._get_site(request.server.site_id)
+        print(site_info)
         print("2")
-        response.servers = self._get_servers(request.server.site_id, request.server.license_uuid)
-        print(response.servers)
+        servers_info = self._get_servers(request.server.site_id, request.server.license_uuid)
+        print(servers_info)
         print("3")
 
-        return response
+        return site_pb2.SiteResponse(site = site_info, servers = servers_info)
 
     # 서버정보 1대 가져온다
     def _get_server(self, site_id, license_uuid):
