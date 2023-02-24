@@ -57,9 +57,8 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
         print("0")
         with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
-            row = pcursor.fetchone()
-            print(row)
-            if row > 0:
+            if pcursor.rowcount > 0:
+                row = pcursor.fetchone()
                 approve = row[0]
                 license_data = row[1]
 
