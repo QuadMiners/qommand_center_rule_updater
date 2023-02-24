@@ -10,10 +10,10 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
 
     def _get_site(self, site_id):
 
-        site = None
+        site_info = None
 
         query = """
-                SELECT type, address, tel, desc, engineer, sales 
+                SELECT name, address, tel, desc, engineer, sales 
                 FROM site 
                 WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
@@ -21,16 +21,18 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
             pcursor.execute(query)
             row = pcursor.fetchone()
             if pcursor.rowcount > 0:
-                site = site_pb2.Site(name=row[0],
-                                     address=row[1],
-                                     tel=row[2],
-                                     desc=row[3],
-                                     engineer=row[4],
-                                     sales=row[5])
+                site_info = site_pb2.Site(name=row[0],
+                                        address=row[1],
+                                        tel=row[2],
+                                        desc=row[3],
+                                        engineer=row[4],
+                                        sales=row[5])
+
+        return site_info
 
     def _get_servers(self, site_id, license_uuid):
 
-        servers = None
+        servers_info = None
 
         query = """
                 SELECT id, name, server_type, version, host_name, ipaddr, license_data
@@ -49,9 +51,9 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                                                host_name=row[4],
                                                ipaddr=row[5],
                                                license_data=[row[6]])
-                    servers.append(server)
+                    servers_info.append(server)
 
-        return servers
+        return servers_info
 
     # 사이트에 대한 정보를 전부 가져온다. Site , Server 정보 모두
     def GetSite(self, request, context):
