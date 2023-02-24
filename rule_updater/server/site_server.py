@@ -31,15 +31,15 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
 
     def _get_all_servers(self, site_id):
 
-        servers_info = None
+        servers_info = list()
 
         #info license_data
         query = """
                 SELECT server_info.id, name, type, version, hostname, ipaddr, info
                 FROM black.server_info 
                 JOIN black.license 
-                ON black.license.server_info_id = black.server_info.id
-                WHERE site_id = '{site_id}'
+                ON black.server_info.id = black.license.server_info_id 
+                WHERE server_info.site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
         with db.pmdatabase.get_cursor() as pcursor:
             pcursor.execute(query)
