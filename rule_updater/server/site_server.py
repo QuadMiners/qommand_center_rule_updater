@@ -28,7 +28,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
                                      engineer=row[4],
                                      sales=row[5])
 
-    def _get_servers(self, site_id):
+    def _get_servers(self, site_id, license_uuid):
 
         servers = None
 
@@ -56,15 +56,11 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
     # 사이트에 대한 정보를 전부 가져온다. Site , Server 정보 모두
     def GetSite(self, request, context):
 
-        request_server = request.server
-        site_id = request_server.site_id
-        license_uuid = request_server.license_uuid
-
+        print(request)
         response = site_pb2.SiteResponse()
-        response.site = self._get_site(site_id)
-        response.servers = self._get_servers(site_id)
-
+        response.site = self._get_site(request.server.site_id)
         print(response.site)
+        response.servers = self._get_servers(request.server.site_id, request.server.license_uuid)
         print(response.servers)
 
         return response

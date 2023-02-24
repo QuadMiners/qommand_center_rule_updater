@@ -57,8 +57,8 @@ class SiteClientMixin(ChannelMixin, ResponseRequestMixin):
         """
             서버에게 요청 response_data에 값 받아옴
         """
-        request_packet = site_pb2.SiteRequest()
-        request_packet.server = self.get_request_server()
+        request_packet = self.get_request_server()
+        print(request_packet)
         response_data = stub.GetSite(request_packet, timeout=10)
 
         print(response_data.site)

@@ -104,10 +104,11 @@ class ResponseRequestMixin():
         request_server = server_pb2.RequestServer()
 
         with db.pmdatabase.get_cursor() as pcursor:
-            pcursor.excute(query)
+            pcursor.execute(query)
             row = pcursor.fetchone()
+            print(row)
             if pcursor.rowcount > 0:
-                request_server.site_id = row[0]
+                request_server.site_id = str(row[0])
                 request_server.license_uuid = row[1]
 
         return request_server
