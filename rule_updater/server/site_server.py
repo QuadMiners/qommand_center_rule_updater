@@ -66,7 +66,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
         site_info = self._get_site(request.server.site_id)
         print(site_info)
 
-        servers_info = self._get_all_servers(request.server.site_id, request.server.license_uuid)
+        servers_info = self._get_all_servers(request.server.site_id)
         print(servers_info)
 
         return site_pb2.SiteResponse(site = site_info, servers = servers_info)
