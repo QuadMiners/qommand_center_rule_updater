@@ -12,7 +12,7 @@ class QmcSiteService(RequestCheckMixin, rule_update_service_pb2_grpc.SiteService
 
         site_info = None
         query = """
-                SELECT name, address, tel, desc, engineer, sales 
+                SELECT name, address, tel, 'desc', engineer, sales 
                 FROM site 
                 WHERE site_id = '{site_id}'
                 """.format(**dict(site_id=site_id))
