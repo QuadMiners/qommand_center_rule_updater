@@ -60,9 +60,10 @@ class QmcLicenseService(RequestCheckMixin, rule_update_service_pb2_grpc.LicenseS
                 approve = row[0]
                 license_data = row[1]
 
-
+        print("1")
         print(approve, license_data)
-
+        print("2")
+        
         if approve == "confirm":
             response = license_pb2.LicenseStatus(status=license_pb2.LicenseStatus.APPROVED,
                                                  license_data=license_data)
