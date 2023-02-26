@@ -1,0 +1,50 @@
+syntax = "proto3";
+import "command_center/protocol/site/server.proto";
+
+enum LicenseStatus {
+  CONFIRM = 0;
+  WAIT = 1;
+  REJECT = 2;
+  SITE_NONE = 3;
+}
+
+
+message LicenseRegistrationRequest {
+  string reg_user_name = 1;
+  string reg_user_tel = 2;
+  string site_code = 3;
+  string server_serial = 4;
+  Server server = 5;
+}
+
+message LicenseRequest {
+  string hardware_uuid = 1;
+  string machine_id = 2;
+}
+
+/*
+  License Response 에 대한건 NBB만 하면될듯
+  Relay 서버는 구축해서 나기가 때문에 정보 업데이트 되거나 할 필요는 없으니.
+
+ */
+message LicenseResponse {
+  LicenseStatus status = 1;
+  string license_data = 2; /* 미리 승인되어 있으면 데이터 채우고 아니면 제외*/
+  string approval_user = 3;  /* Reject User 정보 */
+  string approval_contents = 4; /* Reject 될때 사유 */
+}
+
+message License {
+    int64 server_id = 0;
+    string name = 2;
+    string type = 3;
+    string version = 4;
+    string uuid = 5;
+    string start_date =6;
+    string end_date = 7;
+    string raw = 8;
+    reg_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="생성한 사람")
+    auto_update = models.BooleanField(default=False, verbose_name="자동 배포 여부", blank=True, null=True)
+    expire = models.BooleanField(default=False, verbose_name="기한이 지난 라이센스")
+    update_server_status = models.BooleanField(default=False, verbose_name="업데이트 여부 발생")
+}

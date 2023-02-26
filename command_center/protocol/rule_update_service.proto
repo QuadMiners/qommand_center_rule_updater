@@ -1,0 +1,30 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+import "command_center/protocol/heartbeat/heartbeat.proto";
+import "command_center/protocol/license/license.proto";
+import "command_center/protocol/data/data.proto";
+import "command_center/protocol/site/server.proto";
+import "command_center/protocol/site/site.proto";
+
+
+service HeartbeatService {
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse){}
+}
+
+service LicenseService {
+  rpc Register(LicenseRegistrationRequest) returns (LicenseResponse) {}
+  rpc Status(LicenseRequest) returns (LicenseResponse) {}
+}
+
+service SiteService {
+  rpc GetSite(SiteRequest) returns (SiteResponse) {}        /* 사이트에 대한 정보를 전부 가져온다. Site , Server 정보 모두 */
+  rpc GetServer(ServerRequest) returns (ServerResponse);    /* 서버정보 1대 가져온다 */
+  rpc UpdateServer(Server) returns (google.protobuf.Empty);  /* 서버정보 가 업데이트되면 License 에 일부 정보를 업데이트 한다. */
+}
+
+service DataUpdateService {
+  rpc GetVersions(DataVersionRequest) returns (DataVersionResponse) {}
+  rpc GetData(DataRequest) returns (DataResponse) {}
+  rpc UpdateVersion(DataRequest) returns (google.protobuf.Empty) {}  /* Snort 룰 정보의 경우 각 서버 마다 업데이트 정보 업데이트 호출 : NBB */
+}

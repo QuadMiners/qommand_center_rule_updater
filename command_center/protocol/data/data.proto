@@ -1,0 +1,37 @@
+syntax = "proto3";
+import "google/protobuf/struct.proto";
+import "command_center/protocol/site/server.proto";
+
+/*
+  Relay 서버에 데이터 타입 별로 정보 업데이트
+  Relay 서버에서 버전 릴리즈 하면 +1 값으로 가져온다.
+ */
+enum DataType {
+  SNORT = 0;
+  SNORT_RELAY = 1;
+}
+
+message DataVersionRequest {
+  RequestServer server = 1;
+}
+
+message DataVersion{
+  DataType type = 1;
+  int64 version  = 2;
+}
+
+message DataVersionResponse{
+  repeated DataVersion versions = 1;
+}
+
+
+// +1 하면서 버전 차이를 전부 팔로우한다.
+message DataRequest{
+  RequestServer server = 1;
+  DataVersion version = 2;
+}
+
+message DataResponse{
+  DataVersion version = 1;
+  repeated google.protobuf.Struct data= 2;
+}

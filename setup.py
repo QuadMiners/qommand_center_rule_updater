@@ -8,14 +8,13 @@ import setupinfo
 from setuptools import setup
 
 PROTO_FILES = [
-    'protocol/rule_update_service.proto',
-    'protocol/heartbeat/heartbeat.proto',
-    'protocol/data/data.proto',
-    'protocol/license/license.proto',
-    'protocol/site/site.proto',
-    'protocol/site/server.proto',
+    'command_center/protocol/rule_update_service.proto',
+    'command_center/protocol/heartbeat/heartbeat.proto',
+    'command_center/protocol/data/data.proto',
+    'command_center/protocol/license/license.proto',
+    'command_center/protocol/site/site.proto',
+    'command_center/protocol/site/server.proto',
 ]
-
 def generate_proto(source):
     """Invoke Protocol Compiler to generate python from given source .proto."""
 
@@ -28,11 +27,10 @@ def generate_proto(source):
             (os.path.getmtime(source) > os.path.getmtime(output))):
         if DEBUG:
             print('Generating %s' % output)
-        " python -m grpc.tools.protoc -I/usr/local/include -I. --python_out=./ --grpc_python_out=./ ./protocol/*.proto "
+        " python -m grpc.tools.protoc -I/usr/local/include -I. --python_out=./ --grpc_python_out=./ ./command_center/protocol/*.proto "
         protoc_command = ['python', '-m', 'grpc.tools.protoc', '-I.', '-I/usr/local/include/', '--python_out=./', '--grpc_python_out=./', source]
         if subprocess.call(protoc_command) != 0:
             sys.exit(1)
-
 
 class clean(_clean):
     def run(self):
@@ -50,9 +48,6 @@ class build_py(object):
     def run(self):
         for proto in PROTO_FILES:
             generate_proto(proto)
-
-
-
 build_py().run()
 
 setup(
@@ -69,8 +64,8 @@ setup(
     },
     entry_points={
               'console_scripts': [
-                  'qms_updater= rule_updater.bin.qms_updater:main',
-                  'qms_watchdog = rule_updater.bin.qms_watchdog:main',
+                  'qmc_manager= command_center.bin.qmc_manager:main',
+                  'qmc_watchdog = command_center.bin.qmc_watchdog:main',
               ],
           },
 )

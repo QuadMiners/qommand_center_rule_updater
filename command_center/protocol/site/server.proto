@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+message RequestServer{
+  string site_code = 1;
+  string hardware_uuid = 2;
+}
+
+message Server{
+  int64 id = 1;  /* server_id */
+  string name = 2;
+  string type = 3;
+  string hostname = 4;
+  string ipaddr = 5;
+  string version = 6;
+  string os_ver = 7;
+  string hardware_uuid = 8;
+  string machine_id = 9;
+
+  string license_data = 10; /* base64 encoded string */
+}
+
+message ServerRequest {
+  RequestServer server = 1;
+  int64 server_id = 2;
+}
+
+message ServerResponse {
+  repeated Server servers = 1;
+}
+

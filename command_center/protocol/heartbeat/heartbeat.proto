@@ -1,0 +1,42 @@
+syntax = "proto3";
+import "command_center/protocol/site/server.proto";
+import "command_center/protocol/data/data.proto";
+
+/*
+목적 - 살아있는지 확인만 하는 말그대로 하트비트의 목적.
+ */
+enum ServerStatus{
+  REGISTER = 0;
+  NOTFOUND = 1;
+}
+
+enum DataUpdateFlag {
+  NONE_FLAG = 0;
+  UPDATE = 1;
+}
+
+enum StringType {
+  USERAGENT = 0;
+  URL = 1;
+
+}
+
+message StringData{
+  StringType str_type = 1;
+  string data = 2;
+}
+
+
+message HeartbeatRequest{
+  RequestServer server = 1;
+  /* DATA */
+  repeated StringData datas =  4;
+}
+
+
+message HeartbeatResponse{
+  ServerStatus status = 1;
+  DataUpdateFlag  site_update_flag = 2;  /* Site 정보 업데이트 여부 , 담당 엔지니어, */
+  DataUpdateFlag  license_update_flag = 3;  /* 라이센스 업데이트 상태 정보 : 재발급 되면 업데이트 해야됨. */
+  repeated  DataVersion versions = 4;
+}
