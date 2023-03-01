@@ -118,7 +118,7 @@ class DataClientMixin(SnortMixin,ClientRequestMixin):
             if data_version.type == DataType.SNORT:
                 if version < data_version.version:
                     level = (version and DataLevel.L_UPDATE or DataLevel.L_ALL)
-                    self._update_data(data_version.type, version=version)
+                    self._update_data(data_version.type, version=version, update_level=level)
 
 
 
