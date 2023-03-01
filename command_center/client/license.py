@@ -1,8 +1,8 @@
 import logging
 
+from command_center.client import ClientRequestMixin
 from command_center.library.rpc.retry import retrying_stub_methods
 from command_center.protocol import rule_update_service_pb2_grpc
-from command_center import ResponseRequestMixin, ChannelMixin
 from command_center.protocol.license import license_pb2
 from command_center.protocol.license.license_pb2 import LicenseRegistrationRequest
 from command_center.library.AppConfig import gconfig
@@ -12,7 +12,7 @@ import command_center.library.database as db
 logger = logging.getLogger(__name__)
 
 
-class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
+class LicenseClientMixin(ClientRequestMixin):
 
     def Register(self, request:LicenseRegistrationRequest):
         """
@@ -79,6 +79,18 @@ class LicenseClientMixin(ChannelMixin, ResponseRequestMixin):
             elif license_status == license_pb2.LicenseStatus.REJECT:
                 ret = "Rejected Server Register [ {0} ]".format(response_data.approval_contents)
         return license_status, ret
+
+    def RegisterRelay(self, relayserver):
+        with self.get_command_center_channel() as channel:
+            stub = rule_update_service_pb2_grpc.LicenseServiceStub(channel)
+            retrying_stub_methods(stub)
+
+            response_data = stub.RegisterRelay(relayserver, timeout=10)
+            license_status = response_data.status
+            print(response_data.status)
+            self._update_local(relayserver.site_code)
+
+        return license_status
 
     def _update_local(self, site_code):
         print("UPDATE command_center_info SET site_code='{0}'".format(site_code))

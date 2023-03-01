@@ -34,8 +34,9 @@ message LicenseResponse {
   string approval_contents = 4; /* Reject 될때 사유 */
 }
 
+
 message License {
-    int64 server_id = 0;
+    int64 server_id = 1;
     string name = 2;
     string type = 3;
     string version = 4;
@@ -43,8 +44,14 @@ message License {
     string start_date =6;
     string end_date = 7;
     string raw = 8;
-    reg_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="생성한 사람")
-    auto_update = models.BooleanField(default=False, verbose_name="자동 배포 여부", blank=True, null=True)
-    expire = models.BooleanField(default=False, verbose_name="기한이 지난 라이센스")
-    update_server_status = models.BooleanField(default=False, verbose_name="업데이트 여부 발생")
+    bool expire = 9;
+    string hardware_uuid = 10;
+    string machine_id = 11;
 }
+
+/* 업데이트가 필요한 데이터만 가져온다.*/
+message LicenseListResponse {
+  repeated License  licenses = 1;
+}
+
+/**/

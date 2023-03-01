@@ -11,6 +11,22 @@ enum DataType {
   SNORT_RELAY = 1;
 }
 
+/**
+    NONE = 0, _('None')
+    EQUAL = 1, _('Equal')
+    INSERT = 2, _('Insert')
+    DELETE = 3, _('Delete')
+    UPDATE = 4, _('Update')
+    CONFLICT = 5, _('Conflict')
+    MASTER = 6, _('Master')
+    ERROR = 7, _('Error')
+
+ */
+enum DataLevel {
+  L_ALL = 0;
+  L_UPDATE = 1;
+}
+
 message DataVersionRequest {
   RequestServer server = 1;
 }
@@ -27,11 +43,13 @@ message DataVersionResponse{
 
 // +1 하면서 버전 차이를 전부 팔로우한다.
 message DataRequest{
-  RequestServer server = 1;
-  DataVersion version = 2;
+  DataLevel level = 1;
+  RequestServer server = 2;
+  DataVersion version = 3;
 }
 
 message DataResponse{
   DataVersion version = 1;
-  repeated google.protobuf.Struct data= 2;
+  google.protobuf.Struct status = 2;
+  repeated google.protobuf.Struct datas= 3;
 }

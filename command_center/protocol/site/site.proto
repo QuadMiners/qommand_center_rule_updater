@@ -12,6 +12,7 @@ message Site{
   string engineer = 8;
   string sales = 9;
   string notification_settings = 10;
+  repeated Server servers = 11;
 }
 
 message SiteRequest {
@@ -19,8 +20,7 @@ message SiteRequest {
 }
 
 message SiteResponse {
-  Site site = 1;
-  repeated Server servers = 2;
+  repeated Site sites = 1;
 }
 
 /*

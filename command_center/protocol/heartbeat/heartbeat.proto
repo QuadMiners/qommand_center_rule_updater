@@ -18,7 +18,6 @@ enum DataUpdateFlag {
 enum StringType {
   USERAGENT = 0;
   URL = 1;
-
 }
 
 message StringData{

@@ -3,6 +3,7 @@ import logging
 import time
 import grpc
 
+from command_center.client.heartbeat import HeartBeatMixin
 from command_center.library.qredis.redis_server import RedisMixin
 from command_center.protocol import rule_update_service_pb2_grpc
 from concurrent import futures
@@ -11,7 +12,6 @@ from optparse import OptionParser
 from command_center.library.AppDaemon import Daemon
 from command_center.library.database import DatabasePoolMixin
 
-from command_center import ChannelMixin
 
 import command_center.library.AppDefine as app_define
 from command_center.server.data_server import QmcDataService
@@ -22,7 +22,7 @@ from command_center.server.site_server import QmcSiteService
 logger = logging.getLogger(__name__)
 
 
-class RuleUpdateApplication(Daemon, ChannelMixin,RedisMixin, DatabasePoolMixin):
+class RuleUpdateApplication(Daemon, HeartBeatMixin, RedisMixin, DatabasePoolMixin):
     main_server = None
     def update_server(self):
         from command_center.library.AppConfig import gconfig
@@ -55,12 +55,9 @@ class RuleUpdateApplication(Daemon, ChannelMixin,RedisMixin, DatabasePoolMixin):
         self.update_server()
 
         while self.daemon_alive:
-            try:
-                if gconfig.command_center.model in ('relay'):
-                    self.heartbeat()
-                time.sleep(10)
-            except Exception as hb:
-                logger.error("Heartbeat error: {0}".format(hb))
+            if gconfig.command_center.model in ('relay'):
+                self.heartbeat()
+            time.sleep(10)
 
         self.main_server.stop()
         logger.info("--- Rule Update Application Stop ---")

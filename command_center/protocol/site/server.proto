@@ -1,8 +1,15 @@
 syntax = "proto3";
 
+enum ServerType {
+  RELAY = 0;
+  NBB = 1;
+}
+
+
 message RequestServer{
-  string site_code = 1;
-  string hardware_uuid = 2;
+  ServerType server_type = 1;
+  string site_code = 2;
+  string hardware_uuid = 3;
 }
 
 message Server{
@@ -15,8 +22,6 @@ message Server{
   string os_ver = 7;
   string hardware_uuid = 8;
   string machine_id = 9;
-
-  string license_data = 10; /* base64 encoded string */
 }
 
 message ServerRequest {
@@ -28,3 +33,19 @@ message ServerResponse {
   repeated Server servers = 1;
 }
 
+message RelayServer{
+  string hardware_uuid = 1;
+  string machine_id = 2;
+  string site_code = 3;
+  string manufacturer = 4;
+  string product_name = 5;
+  string serial_number = 6;
+}
+
+message RelayServerResponse{
+  enum RelayStatus {
+    REGISTER = 0;
+    NOTFOUND = 1;
+  }
+  RelayStatus status = 1;
+}

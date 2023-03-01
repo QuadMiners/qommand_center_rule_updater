@@ -102,7 +102,7 @@ class CreateLicense(object):
     def filename_buffer(self):
         buffer =  None
         with open(self.license_file, "r") as fd:
-            buffer = base64.b64encode(fd.read().encode('utf-'))
+            buffer = base64.b64encode(fd.read().encode('utf-8'))
         return buffer
 
     def _create_config_file(self, v_dict, value):

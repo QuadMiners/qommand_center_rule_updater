@@ -55,7 +55,6 @@ def system_model_info():
 
         buf = output.decode('utf-8')
         ret = __parse_sys_info(buf)
-        print(ret)
 
     except OSError as e:
         logger.error("Export OSError | {}".format(e))
@@ -93,7 +92,9 @@ class GetConfig(object):
             self.license= QObject(dict(uuid='-'))
             self.psql = QObject(dict(host='127.0.0.1', port=10090, name='quadminers', user='quadminers', passwd=base64.b64decode('N0RHVnhUNERLd1RV').decode('utf-8'), schema='black'))
             self.redis_config = QObject(dict(host_name='127.0.0.1', port=10080, schema=1, passwd="3QCBQYy8bD7VRpV"))
-            self.server_model = QObject(get_server_model_info())
+            self.server_type()
+            if self.command_center.model == 'relay':
+                self.server_model = QObject(get_server_model_info())
             self.initalize()
 
         except Exception as e:
@@ -130,17 +131,22 @@ class GetConfig(object):
         else:
             logger.error("Not Found File | manager.conf  FilePath : {0}".format(filename))
         self.system_model_insert()
-        self.server_type()
 
     def system_model_insert(self):
         try:
             s_model = get_server_model_info()
-            str_query = """INSERT INTO command_center_info(manufacturer, product_name, family, serial_number, uuid, machine_id )
+            if self.command_center.model == 'relay':
+                str_query = """INSERT INTO qommand_center_info(manufacturer, product_name, family, serial_number, uuid, machine_id)
                         VALUES('{manufacturer}', '{product_name}', '{family}', '{serial_number}', '{uuid}', '{machine_id}')
                        ON CONFLICT(uuid) DO UPDATE SET  manufacturer= '{manufacturer}', product_name='{product_name}', family='{family}', serial_number='{serial_number}', uuid='{uuid}', machine_id='{machine_id}'
                        RETURNING site_code
                         """.format(**s_model)
-
+            else:
+                str_query = """INSERT INTO qommand_center_info(manufacturer, product_name, family, serial_number, uuid, machine_id, site_code)
+                            VALUES('-', 'update', '-', '-', '{0}', '-', 'updateserver')
+                           ON CONFLICT(uuid) DO UPDATE SET  uuid='{0}'
+                           RETURNING site_code
+                            """.format('dd5b5b76-c382-4411-920a-e48f938bf460')
             instance = FPgsql(self.psql)
             site_code = instance.execute(str_query, returning_id=True)
             self.command_center['site_code'] = site_code
@@ -151,7 +157,7 @@ class GetConfig(object):
         instance = FPgsql(self.psql)
         try:
             query = """
-                SELECT type, lang FROM command_center_model
+                SELECT type, lang FROM qommand_center_model
                 """
             with instance.get_cursor() as pcursor:
                 pcursor.execute(query)
@@ -161,23 +167,6 @@ class GetConfig(object):
             self.command_center['lang'] = lang
         except DBException as e:
             logger.error("Error (server_type) [%s] " % e)
-
-    def parent_update_server(self):
-        query = """
-            SELECT hostname, port, sign_flag, sign_file FROM command_center_parent_config
-            """
-        instance = FPgsql(self.psql)
-
-        data = QObject()
-        with instance.pmdatabase.get_cursor() as pcursor:
-            pcursor.execute(query)
-            rows = pcursor.fetchall()
-            columns = pcursor.description
-            for row in rows:
-                for (index, column) in enumerate(row):
-                    data[columns[index][0].lower()] = column
-
-        return data
 
     @property
     def database_config(self):

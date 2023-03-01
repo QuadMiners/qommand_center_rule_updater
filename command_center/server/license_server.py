@@ -2,9 +2,11 @@ import random
 
 from quadlibrary.AppObject import QObject
 
+from command_center.library.rpc.convertor import protobuf_to_dict
 from command_center.protocol import rule_update_service_pb2_grpc
 from command_center.protocol.license import license_pb2
 from command_center import RequestCheckMixin
+from command_center.protocol.site.server_pb2 import RelayServerResponse
 from command_center.server import SiteMixin
 import command_center.library.database as db
 
@@ -16,6 +18,22 @@ class QmcLicenseService(SiteMixin, RequestCheckMixin, rule_update_service_pb2_gr
 
     def Status(self, request, context):
         return self._license_response(request)
+
+    def RegisterRelay(self, request, context):
+        server_info = protobuf_to_dict(request)
+        query = """
+            INSERT INTO relay_server(manufacturer, product_name, serial_number, hardware_uuid, machine_id,site_code, last_heartbeat )
+                            VALUES('{manufacturer}', '{product_name}', '{serial_number}', '{hardware_uuid}', '{machine_id}', 'site_code', now())
+                           ON CONFLICT(hardware_uuid) DO UPDATE SET 
+                            manufacturer= '{manufacturer}', 
+                            product_name='{product_name}', 
+                             serial_number='{serial_number}', 
+                             machine_id='{machine_id}',
+                             site_code = '{site_code}'
+                           RETURNING site_code       
+            """.format(**server_info)
+        db.pmdatabase.execute(query)
+        return RelayServerResponse(status=RelayServerResponse.RelayStatus.REGISTER)
 
     def _license_response(self, request, reg=False):
         raw_license = None

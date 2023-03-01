@@ -30,7 +30,7 @@ def query_to_object(query, msg_class):
                 for (index, value) in enumerate(row):
                     if isinstance(value, int):
                         msg[columns[index].name] = str(int(value))
-                    elif isinstance(value, datetime):
+                    elif isinstance(value, datetime.datetime):
                         msg[columns[index].name] = str(value)
                     else:
                         msg[columns[index].name] = value

@@ -1,18 +1,19 @@
 import logging
 
+from termcolor import cprint
+
+from command_center.client import ClientRequestMixin
+from command_center.client.data_insert.snort import SnortMixin
 from command_center.library.rpc.retry import retrying_stub_methods
 from command_center.protocol import rule_update_service_pb2_grpc
 
-from command_center.protocol.data.data_pb2 import DataVersion, DataRequest, DataVersionRequest, DataType
-from command_center import ResponseRequestMixin
-
-from command_center.library.rule.parser import parse
+from command_center.protocol.data.data_pb2 import DataVersion, DataRequest, DataVersionRequest, DataType, DataLevel
 import command_center.library.database as db
 
 logger = logging.getLogger(__name__)
 
 
-class DataClientMixin(ResponseRequestMixin):
+class DataClientMixin(SnortMixin,ClientRequestMixin):
     """"""
     """
         1. 타겟의 버전 정보를 요청한다.
@@ -21,16 +22,64 @@ class DataClientMixin(ResponseRequestMixin):
     def GetVersions(self):
 
         try:
-            channel = self.get_update_server_channel()
+            with self.get_command_center_channel() as channel:
+                stub = rule_update_service_pb2_grpc.DataUpdateServiceStub(channel)
+                retrying_stub_methods(stub)
+                request_server = self.get_request_server()
+                response_data = stub.GetVersions(DataVersionRequest(server=request_server), timeout=10)
+                self.check_versions(response_data.versions)
+
+        except Exception as k:
+            logger.error("Heartbeat Schedule Exception: {0}".format(k))
+
+    def GetData(self, data_type, version, level=DataLevel.L_UPDATE):
+        get_version = None
+        status = None
+        with self.get_command_center_channel() as channel:
+            request_server = self.get_request_server()
+            data_version = DataVersion(type=data_type, version=version)
+            stub = rule_update_service_pb2_grpc.DataUpdateServiceStub(channel)
+            retrying_stub_methods(stub)
+            response_data = stub.GetData(DataRequest(level=level,server=request_server, version=data_version), timeout=10)
+
+            status, get_version = self.__update_data_version(data_type,response_data, level)
+
+        return status, get_version
+
+    def UpdateVersion(self, type, version):
+        """
+            서버 반영이 완료되면 전송함.
+        """
+        with self.get_command_center_channel() as channel:
             stub = rule_update_service_pb2_grpc.DataUpdateServiceStub(channel)
             retrying_stub_methods(stub)
 
             request_server = self.get_request_server()
-            response_data = stub.GetVersions(DataVersionRequest(server=request_server), timeout=10)
-            self.check_versions(response_data.versions)
+            data_version = DataVersion(type=type, version=version)
+            stub.UpdateVersion(DataRequest(server=request_server, version=data_version), timeout=10)
 
-        except Exception as k:
-            logger.error("Heartbeat Schedule Exception: {0}".format(k))
+    def __update_data_version(self, data_type, request, data_level):
+        version = request.version
+        status = request.status
+        datas = request.datas
+
+        if status:
+            if data_type == DataType.SNORT:
+                status_id = self.status_insert(version.version, status)
+                self.snort_insert(status_id, version.version, datas, data_level)
+            """
+                처음 Sync 되는 경우 데이터가 version 정보가 없으므로 추가작업 없으려고 upsert 로 만듬.
+            """
+            query = """INSERT INTO data_last_versions(version, data_type)
+                        VALUES({0}, {1})
+                       ON CONFLICT (data_type) 
+                       DO UPDATE SET version= excluded.version, data_type= excluded.data_type
+                    """.format(version.version, version.type)
+            db.pmdatabase.execute(query)
+        else:
+            status = None
+
+        return status, version.version
 
     """
         1. 자신의 마지막 버전과 받아온 버전(parameter versions값)을 비교한다.
@@ -38,6 +87,19 @@ class DataClientMixin(ResponseRequestMixin):
         3. 버전 요청시에 last_version 보다 한단계 높은 버전을(+1) 받아온다.
         4. 버전 차이가 난다면 계속 해서 +1 버전 업하면 받아온다.
     """
+
+    def _update_data(self, data_type, version, update_level):
+        while True:
+            status, version = self.GetData(data_type, version, level=update_level)
+            if status:
+                """ 최초 이후에는 업데이트된 정보만 가져온다. """
+                if update_level == DataLevel.L_ALL:
+                    update_level = DataLevel.L_UPDATE
+                cprint("Version Upgrade Success : {0}".format(version), "yellow")
+                version = version + 1
+            else:
+                break
+
     def check_versions(self, versions):
         """
             daemon load 할때 기본값으로 각 데이터 version 들고 비교
@@ -47,90 +109,17 @@ class DataClientMixin(ResponseRequestMixin):
                 version 체크 다르면 api 호출해서 업그레이드 
             """
             query = "SELECT version FROM data_last_verions WHERE type = {0}".format(data_version.type)
-            version = None
+            version = 0
             with db.pmdatabase.get_cursor() as pcursor:
                 pcursor.execute(query)
-                version, = pcursor.fetchone()
+                if pcursor.rowcount > 0:
+                    version, = pcursor.fetchone()
+                    
             if data_version.type == DataType.SNORT:
                 if version < data_version.version:
-                    self.GetData(data_version.type, version=version + 1)
+                    level = (version and DataLevel.L_UPDATE or DataLevel.L_ALL)
+                    self._update_data(data_version.type, version=version)
 
-    """
-        1. 필요한 데이터 타입의 버전을 요청한다.
-        2. 서버로 부터 버전 데이터를 받는다.
-        3. 알맞게 업데이트 한다. __update_data_version
-    """
-    def GetData(self, type, version):
-        channel = self.get_update_server_channel()
-
-        request_server = self.get_request_server()
-        data_version = DataVersion(type=type, version=version)
-
-        stub = rule_update_service_pb2_grpc.DataUpdateServiceStub(channel)
-        retrying_stub_methods(stub)
-        response_data = stub.GetData(DataRequest(server=request_server, version=data_version), timeout=10)
-
-        self.__update_data_version(response_data.version, response_data.data)
-
-        """
-        1. 자신의 업데이트가 완료되면 업데이트가 완료되었다고 전송한다.
-        2. 
-        3. 전송값은 데이터 타입과 업데이트한 last_version이 될것.
-        """
-
-    def UpdateVersion(self, type, version):
-        """
-            서버 반영이 완료되면 전송함.
-        """
-        channel = self.get_update_server_channel()
-
-        request_server = self.get_request_server()
-        data_version = DataVersion(type=type, version=version)
-
-        stub = rule_update_service_pb2_grpc.DataUpdateServiceStub(channel)
-        retrying_stub_methods(stub)
-        stub.UpdateVersion(DataRequest(server=request_server, version=data_version), timeout=10)
-
-    def __update_data_version(self, data_version, data):
-        type = data_version.type
-        version = data_version.version
-        last_version = version + 1
-
-        """
-            파일을 받아와서 우선 저장한다.
-        """
-        with open(type+"_"+last_version, "w") as f:
-            f.write(data)
-
-        f = open(type+"_"+last_version, "r")
-        for line in f.readlines():
-            rule = parse(line)
-            #추가 해야함...
-            """
-                받은 version data 처리.. 
-                1.  Release된 파일을 받아온다. 
-                2.  파싱후 master_hunt의 status_id를 가지고 조인하여 rule_status 테이블에서 status=release 인것과 머징한다.
-                3.  머징 기준은 받아온 파일이 우선시 된다. 즉, update와 insert만 이루어진다.
-                4.  그후 master_hunt의 table에 데이터를 넣는다.
-                5.  master_hunt 테이블 작업이 완료되면 자신의 data_last_version table을 업데이트 해준다.
-                6.  그후 UpdateVersion을 호출한다.
-                
-                execution_type = QMCD 을 추가해야한다.
-                master_hunt DB에 넣어야한다.
-            """
-        f.close()
-
-        """
-            master_hunt의 과정이 끝나면 data_last_version에 해당 타입과 버전 번호를 업데이트한다.
-            그 후 UpdateVersion을 호출하여 서버에 알린다.
-        """
-        query = f"UPDATE black.data_last_verions " \
-                f"SET version = '{last_version}' " \
-                f"WHERE type = '{type}'"
-
-        result_dict = fetchone_query_to_dict(query)
-
-        self.UpdateVersion(type, last_version)
 
 
 
